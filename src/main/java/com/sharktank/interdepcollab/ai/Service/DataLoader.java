@@ -40,6 +40,7 @@ public class DataLoader {
     @Autowired
     private ObjectMapper objectMapper;  
     @Value("${azure.blob.connection-string}")
+
     private String connectionString;
 
     @Transactional
