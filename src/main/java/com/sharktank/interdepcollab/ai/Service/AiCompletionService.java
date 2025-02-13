@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Service
 public class AiCompletionService {
 
-    @Autowired
-    private WebClient webClient;
+    // @Autowired
+    // private WebClient webClient;
     
 }

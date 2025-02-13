@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.Set;
 
 import com.sharktank.interdepcollab.devops.model.UserStory;
-import com.sharktank.interdepcollab.file.model.File;
+import com.sharktank.interdepcollab.file.model.SolutionFile;
 import com.sharktank.interdepcollab.user.model.User;
 
 import jakarta.persistence.*;
@@ -16,7 +16,7 @@ import lombok.Data;
 public class Solution {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     
     @NotNull
     private String name;
@@ -41,7 +41,7 @@ public class Solution {
     private Set<FAQ> faqs;
 
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<File> files;
+    private Set<SolutionFile> files;
 
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserStory> userStories;

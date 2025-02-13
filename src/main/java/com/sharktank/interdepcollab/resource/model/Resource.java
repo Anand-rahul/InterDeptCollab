@@ -2,7 +2,7 @@ package com.sharktank.interdepcollab.resource.model;
 
 import java.time.Instant;
 
-import com.sharktank.interdepcollab.file.model.File;
+import com.sharktank.interdepcollab.file.model.*;
 import com.sharktank.interdepcollab.user.model.User;
 
 import jakarta.persistence.*;
@@ -14,14 +14,14 @@ import lombok.Data;
 public class Resource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Integer id;
     
     @NotNull
     private String name;
     
     @NotNull
-    @OneToOne(mappedBy = "resources", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private File file;
+    @OneToOne(mappedBy = "resource", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private ResourceFile file;
     
     @NotNull
     private User createdBy;

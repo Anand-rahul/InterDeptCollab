@@ -24,7 +24,7 @@ public class DataLoader {
     private VectorStore vectorStore;
 
     // Azure Blob Storage connection details
-    @Value("${azure.blob.connection-string}")
+    @Value("${spring.cloud.azure.storage.blob.connection-string}")
     private String connectionString;
 
     public String Vectorize(String path) throws IOException, URISyntaxException {
