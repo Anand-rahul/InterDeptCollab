@@ -36,11 +36,11 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             processToken(request);
         } catch (Exception e) {
-            logger.error(String.format("Failed to process JWT Token: %s", e.getMessage()));
+            log.error(String.format("Failed to process JWT Token: %s", e.getMessage()));
             handlerExceptionResolver.resolveException(request, response, null, e);
         }
 
-        logger.debug("Processing complete. Return back control to framework");
+        log.debug("Processing complete. Return back control to framework");
         filterChain.doFilter(request, response);
     }
 
