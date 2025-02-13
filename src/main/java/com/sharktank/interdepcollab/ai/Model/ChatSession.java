@@ -19,7 +19,6 @@ public class ChatSession {
     @GeneratedValue(strategy = GenerationType.UUID)
     public UUID guid;
 
-    public long userId;
     public String title;
 
     @CreationTimestamp
@@ -34,14 +33,6 @@ public class ChatSession {
 
     public void setGuid(UUID guid) {
         this.guid = guid;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
     }
 
     public String getTitle() {
@@ -68,9 +59,8 @@ public class ChatSession {
         this.updatedAt = updatedAt;
     }
 
-    public ChatSession(UUID guid, long userId, String title, Instant createdAt, Instant updatedAt) {
+    public ChatSession(UUID guid, String title, Instant createdAt, Instant updatedAt) {
         this.guid = guid;
-        this.userId = userId;
         this.title = title;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
