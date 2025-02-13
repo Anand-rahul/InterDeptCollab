@@ -2,6 +2,7 @@ package com.sharktank.interdepcollab.ai.Service;
 
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobClientBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sharktank.interdepcollab.ai.Model.VectorData;
@@ -40,7 +41,6 @@ public class DataLoader {
     @Autowired
     private ObjectMapper objectMapper;  
     @Value("${azure.blob.connection-string}")
-
     private String connectionString;
 
     @Transactional
@@ -144,9 +144,12 @@ public class DataLoader {
             metadata.put("fileType", fileType);
             metadata.put("chunkSize", String.valueOf(chunk.length()));
 
-            JsonNode jsonData = objectMapper.valueToTree(metadata);
-
-            vectorDataList.add(new VectorData(sourceType, sourceId, chunk, jsonData, embedding));
+            try {
+                String jsonData = objectMapper.writeValueAsString(metadata);  
+                vectorDataList.add(new VectorData(sourceType, sourceId, chunk, jsonData, embedding));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException("Error converting metadata to JSON string", e);
+            }
         }
 
         vectorRepository.saveAll(vectorDataList);  

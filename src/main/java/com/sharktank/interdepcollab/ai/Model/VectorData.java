@@ -21,15 +21,15 @@ public class VectorData {
     @Column(columnDefinition = "TEXT")
     private String text;
 
-    @Column(columnDefinition = "JSONB")
-    private JsonNode jsonData; 
+    @Column(columnDefinition = "TEXT")
+    private String jsonData; 
 
     @Column(columnDefinition = "vector(1536)", nullable = false)
     private float[] embedding;
 
     public VectorData() {}
 
-    public VectorData(String sourceType, UUID sourceId, String text, JsonNode jsonData, float[] embedding) {
+    public VectorData(String sourceType, UUID sourceId, String text, String jsonData, float[] embedding) {
         this.sourceType = sourceType;
         this.sourceId = sourceId;
         this.text = text;
