@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.*;
-import com.sharktank.interdepcollab.user.model.User;
+import com.sharktank.interdepcollab.user.model.AppUser;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,12 +27,12 @@ public class Requirement {
     
     @ManyToOne
     @JoinColumn
-    private User assignedTo;
+    private AppUser assignedTo;
     
     @ManyToOne
     @NotNull
     @JoinColumn(nullable = false)
-    private User createdBy;
+    private AppUser createdBy;
     
     @Enumerated(EnumType.STRING)
     private Status status;
