@@ -14,7 +14,6 @@ public class Message {
     public long id;
 
     public UUID chatGuid;
-    public long userId;
     @Column(columnDefinition = "TEXT")
     public String messageType;
     @Column(columnDefinition = "TEXT")
@@ -25,10 +24,9 @@ public class Message {
     public Message() {
     }
 
-    public Message(long id, UUID chatGuid, long userId, String messageType, String messageText, Instant timestamp, String metaData) {
+    public Message(long id, UUID chatGuid, String messageType, String messageText, Instant timestamp, String metaData) {
         this.id = id;
         this.chatGuid = chatGuid;
-        this.userId = userId;
         this.messageType = messageType;
         this.messageText = messageText;
         this.timestamp = timestamp;
@@ -49,14 +47,6 @@ public class Message {
 
     public void setChatGuid(UUID chatGuid) {
         this.chatGuid = chatGuid;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
     }
 
     public String getMessageType() {
