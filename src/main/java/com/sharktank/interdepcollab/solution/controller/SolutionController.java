@@ -1,55 +1,52 @@
-// package com.sharktank.interdepcollab.solution.controller;
+package com.sharktank.interdepcollab.solution.controller;
 
-// import org.springframework.web.bind.annotation.RequestMapping;
-// import org.springframework.web.bind.annotation.RestController;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.data.domain.Page;
-// import org.springframework.data.domain.Pageable;
-// import org.springframework.http.ResponseEntity;
-// import org.springframework.web.bind.annotation.*;
-// import com.sharktank.interdepcollab.solution.model.Solution;
-// import com.sharktank.interdepcollab.solution.service.SolutionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.SortDefault;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-// @RestController
-// @RequestMapping("/solution")
-// public class SolutionController {
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.sharktank.interdepcollab.solution.model.*;
+import com.sharktank.interdepcollab.solution.service.SolutionService;
 
-//     @Autowired
-//     private SolutionService solutionService;
+@RestController
+@RequestMapping("/api/solution")
+public class SolutionController {
 
-//     @PostMapping
-//     public ResponseEntity<Solution> createSolution(@RequestBody Solution solution) {
-//         Solution createdSolution = solutionService.createSolution(solution);
-//         return ResponseEntity.ok(createdSolution);
-//     }
+    @Autowired
+    private SolutionService solutionService;
 
-//     @PutMapping("/{id}")
-//     public ResponseEntity<Solution> updateSolution(@PathVariable Long id, @RequestBody Solution solution) {
-//         Solution updatedSolution = solutionService.updateSolution(id, solution);
-//         return ResponseEntity.ok(updatedSolution);
-//     }
+    @PostMapping
+    public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionDTO solution) {
+        SolutionDTO createdSolution = solutionService.createSolution(solution);
+        return ResponseEntity.ok(createdSolution);
+    }
 
-//     @GetMapping
-//     public ResponseEntity<Page<Solution>> getAllSolutions(Pageable pageable) {
-//         Page<Solution> solutions = solutionService.getAllSolutions(pageable);
-//         return ResponseEntity.ok(solutions);
-//     }
+    @PutMapping("/{id}")
+    public ResponseEntity<SolutionDTO> updateSolution(@PathVariable Integer id, @RequestBody SolutionDTO solution) throws JsonPatchException {
+        SolutionDTO updatedSolution = solutionService.updateSolution(id, solution);
+        return ResponseEntity.ok(updatedSolution);
+    }
 
-//     @GetMapping("/{id}")
-//     public ResponseEntity<Solution> getSolution(@PathVariable Long id) {
-//         Solution solution = solutionService.getSolution(id);
-//         return ResponseEntity.ok(solution);
-//     }
+    @GetMapping
+    public ResponseEntity<Page<SolutionDTO>> getAllSolutions(@SortDefault(sort = "viewCount") @PageableDefault(size = 20) Pageable pageable) {
+        Page<SolutionDTO> solutions = solutionService.getAllSolutions(pageable);
+        return ResponseEntity.ok(solutions);
+    }
 
-//     @PostMapping("/{id}/like")
-//     public ResponseEntity<Solution> likeSolution(@PathVariable Long id) {
-//         Solution likedSolution = solutionService.likeSolution(id);
-//         return ResponseEntity.ok(likedSolution);
-//     }
+    @GetMapping("/{id}")
+    public ResponseEntity<SolutionDTO> getSolution(@PathVariable Integer id) {
+        SolutionDTO solution = solutionService.getSolution(id);
+        return ResponseEntity.ok(solution);
+    }
 
-//     @PostMapping("/{id}/undo-like")
-//     public ResponseEntity<Solution> undoLikeSolution(@PathVariable Long id) {
-//         Solution unlikedSolution = solutionService.undoLikeSolution(id);
-//         return ResponseEntity.ok(unlikedSolution);
-//     }
-// }
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Boolean> likeSolution(@PathVariable Integer id) {
+        Boolean likedSolution = solutionService.toggleLike(id);
+        return ResponseEntity.ok(likedSolution);
+    }
+}
