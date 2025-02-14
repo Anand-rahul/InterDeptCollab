@@ -64,15 +64,24 @@ public class UserService {
   //     return userRepository.findById(id);
   // }
 
-  // public Optional<AppUser> getUserByEmail(String email) {
-  //     return userRepository.findOneByEmail(email);
-  // }
+  // TODO: Expose this in controller
+  public boolean isUserExists(String email) {
+      return userRepository.findByEmail(email).isPresent();
+  }
+
+  public Optional<AppUser> getUserByEmail(String email) {
+      return userRepository.findByEmail(email);
+  }
 
   public AppUser addUser(AppUser user) {
       Optional<AppUser> existingUser = userRepository.findByEmail(user.getEmail());
       if(existingUser.isPresent()) {
           throw new UserExistsException("User Already Exists");
       }
+      return userRepository.save(user);
+  }
+
+  public AppUser saveUser(AppUser user) {
       return userRepository.save(user);
   }
 

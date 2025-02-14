@@ -39,6 +39,7 @@ public class AuthController {
     @Value("${com.sharktank.jwt.expiration-time}")
     private Long JWT_EXPIRATION;
 
+    // BUG: When request is sent with same employeeId, user is replaced
      @PostMapping("/register")
     public ResponseEntity<String> registerUser(@RequestBody AppUser user) throws UserExistsException {
         // Encode the user's password
