@@ -3,6 +3,9 @@ package com.sharktank.interdepcollab.solution.model;
 import java.time.Instant;
 import java.util.Set;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.SolutionFile;
 import com.sharktank.interdepcollab.user.model.AppUser;
@@ -19,6 +22,7 @@ public class Solution {
     private Integer id;
     
     @NotNull
+    @Column(nullable = false)
     private String name;
     private String department;
     
@@ -33,8 +37,13 @@ public class Solution {
     @ManyToOne
     @JoinColumn
     private AppUser pmo;
+
+    private int likeCount;
+    private int viewCount;
     
+    @CreationTimestamp
     private Instant createdDate;
+    @UpdateTimestamp
     private Instant updatedDate;
     
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -45,5 +54,17 @@ public class Solution {
 
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserStory> userStories;
+
+    public void addView() {
+        this.viewCount++;
+    }
+
+    public void addLike() {
+        this.likeCount++;
+    }
+
+    public void removeLike() {
+        this.likeCount--;
+    }
 }
 

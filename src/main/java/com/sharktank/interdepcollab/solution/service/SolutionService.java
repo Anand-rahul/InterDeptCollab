@@ -1,27 +1,159 @@
-// package com.sharktank.interdepcollab.solution.service;
+package com.sharktank.interdepcollab.solution.service;
 
-// public class SolutionService {
-//     public Solution createSolution(Solution solution) {
-//         return null;
-//     }
+import java.util.NoSuchElementException;
 
-//     public Solution updateSolution(Long id, Solution solution) {
-//         return null;
-//     }
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-//     public Page<Solution> getAllSolutions(Pageable pageable) {
-//         return null;
-//     }
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jsonpatch.JsonPatch;
+import com.github.fge.jsonpatch.JsonPatchException;
+import com.sharktank.interdepcollab.exception.InvalidUserException;
+import com.sharktank.interdepcollab.solution.model.*;
+import com.sharktank.interdepcollab.solution.repository.SolutionRepository;
+import com.sharktank.interdepcollab.user.model.*;
+import com.sharktank.interdepcollab.user.service.UserService;
 
-//     public Solution getSolution(Long id) {
-//         return null;
-//     }
+import lombok.RequiredArgsConstructor;
 
-//     public Solution likeSolution(Long id) {
-//         return null;
-//     }
+@Service
+@RequiredArgsConstructor
+public class SolutionService {
 
-//     public Solution undoLikeSolution(Long id) {
-//         return null;
-//     }    
-// }
+    private final UserService userService;
+    private final SolutionRepository solutionRepository;
+    private final ModelMapper solutionMapper;
+    private final ObjectMapper objectMapper;
+
+    public SolutionDTO createSolution(SolutionDTO solution) throws InvalidUserException {
+        AppUser user = userService.getLoggedInUser();
+
+        if (user == null || solution.getCreatedBy() == user.getEmail()) {
+            throw new InvalidUserException("Invalid Creator user");
+        }
+
+        Solution finalSolution = solutionMapper.map(solution, Solution.class);
+        finalSolution.setCreatedBy(user);
+
+        AppUser deliveryManager = userService.getUserByEmail(solution.getDeliveryManager())
+                .orElseThrow(() -> new InvalidUserException("Invalid Delivery Manager"));
+        AppUser pmo = userService.getUserByEmail(solution.getPmo())
+                .orElseThrow(() -> new InvalidUserException("Invalid PMO User"));
+
+        finalSolution.setDeliveryManager(deliveryManager);
+        finalSolution.setPmo(pmo);
+
+        finalSolution = solutionRepository.save(finalSolution);
+        solution = solutionMapper.map(finalSolution, SolutionDTO.class);
+
+        return solution;
+    }
+
+    public SolutionDTO patchSolution(Integer id, JsonPatch jsonPatch)
+            throws JsonPatchException, JsonProcessingException, NoSuchElementException {
+        Solution existingSolution = solutionRepository.findById(id).orElseThrow();
+        JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
+        existingSolution = objectMapper.treeToValue(patched, Solution.class);
+
+        return this.updateSolution(id, solutionMapper.map(existingSolution, SolutionDTO.class));
+    }
+
+    public SolutionDTO updateSolution(Integer id, SolutionDTO solution) {
+        Solution existingSolution = solutionRepository.findById(id).orElseThrow();
+        existingSolution.setName(solution.getName());
+        existingSolution.setDepartment(solution.getDepartment());
+
+        if (solution.getCreatedBy() != null
+                && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
+            throw new InvalidUserException("Cannot change the creator of the solution");
+        }
+
+        if (solution.getDeliveryManager() != null
+                && !solution.getDeliveryManager().equals(existingSolution.getDeliveryManager().getEmail())) {
+            AppUser deliveryManager = userService.getUserByEmail(solution.getDeliveryManager())
+                    .orElseThrow(() -> new InvalidUserException("Invalid Delivery Manager"));
+            existingSolution.setDeliveryManager(deliveryManager);
+        }
+
+        if (solution.getPmo() != null && !solution.getPmo().equals(existingSolution.getPmo().getEmail())) {
+            AppUser pmo = userService.getUserByEmail(solution.getPmo())
+                    .orElseThrow(() -> new InvalidUserException("Invalid PMO User"));
+            existingSolution.setPmo(pmo);
+        }
+
+        existingSolution = solutionRepository.save(existingSolution);
+        return solutionMapper.map(existingSolution, SolutionDTO.class);
+    }
+
+    //TODO: Remove unecessary fields
+    public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
+        Page<Solution> solutions = solutionRepository.findAll(pageable);
+        return solutions.map(solution -> solutionMapper.map(solution, SolutionDTO.class));
+    }
+
+    // BUG: Is viewed is not being set
+    // BUG: User details are being sent
+    @Transactional
+    public SolutionDTO getSolution(Integer id) {
+        AppUser user = userService.getLoggedInUser();
+        Solution solution = solutionRepository.findById(id).orElseThrow();
+        SolutionDTO dto = solutionMapper.map(solution, SolutionDTO.class);
+
+        Action userAction = getOrInitUserAction(user, solution);
+        
+        if(!userAction.getIsViewed()) {
+            solution.addView();
+            userAction.setIsViewed(true);
+        }
+
+        solutionRepository.save(solution);
+        userService.saveUser(user);
+
+        dto.setIsLiked(userAction.getIsLiked());
+        return dto;
+    }
+
+    @Transactional
+    public Boolean toggleLike(Integer id) {
+        AppUser user = userService.getLoggedInUser();
+        Solution solution = solutionRepository.findById(id).orElseThrow();
+        SolutionAction action = getOrInitUserAction(user, solution);
+        action.setIsLiked(!action.getIsLiked());
+
+        if (action.getIsLiked()) {
+            solution.addLike();
+        } else {
+            solution.removeLike();
+        }
+
+        solutionRepository.save(solution);
+        userService.saveUser(user);
+
+        return action.getIsLiked();
+    }
+
+    private SolutionAction getOrInitUserAction(AppUser user, Solution solution) {
+
+        SolutionAction userAction = user.getActions().stream()
+                .filter(action -> action instanceof SolutionAction)
+                .map(action -> (SolutionAction) action)
+                .filter(action -> action.getSolution().getId().equals(solution.getId())).findFirst().orElse(
+                        null);
+
+        if (userAction == null) {
+            userAction = new SolutionAction();
+            userAction.setSolution(solution);
+            userAction.setUser(user);
+            userAction.setIsLiked(false);
+            userAction.setIsViewed(false);
+            user.getActions().add(userAction);
+        }
+
+        return userAction;
+    }
+}
