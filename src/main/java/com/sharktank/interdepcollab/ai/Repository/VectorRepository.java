@@ -7,11 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.sharktank.interdepcollab.ai.Model.VectorData;
+import com.sharktank.interdepcollab.ai.Model.VectorStore;
 
 
 @Repository
-public interface VectorRepository extends JpaRepository<VectorData, Long> {
+public interface VectorRepository extends JpaRepository<VectorStore, Long> {
 
 
     @Query(value = """
@@ -20,7 +20,7 @@ public interface VectorRepository extends JpaRepository<VectorData, Long> {
         ORDER BY embedding <=> CAST(:queryVector AS vector)
         LIMIT :topK
     """, nativeQuery = true)
-    List<VectorData> searchByCosineSimilarity(
+    List<VectorStore> searchByCosineSimilarity(
             @Param("queryVector") String queryVector,
             @Param("sourceType") String sourceType,
             @Param("topK") int topK
@@ -32,7 +32,7 @@ public interface VectorRepository extends JpaRepository<VectorData, Long> {
         ORDER BY embedding <-> CAST(:queryVector AS vector)
         LIMIT :topK
     """, nativeQuery = true)
-    List<VectorData> searchByL2Distance(
+    List<VectorStore> searchByL2Distance(
             @Param("queryVector") String queryVector,
             @Param("sourceType") String sourceType,
             @Param("topK") int topK

@@ -3,9 +3,15 @@ package com.sharktank.interdepcollab.ai.Service;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sharktank.interdepcollab.ai.Model.VectorData;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.AbstractExtractorMethod;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.ITextExtractor;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.JsonExtractorMethod;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.PdfExtractorMethod;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.PdfTextExtractor;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.TextExtractorMethod;
+import com.sharktank.interdepcollab.ai.ExtractorFactory.TxtTextExtractor;
+import com.sharktank.interdepcollab.ai.Model.VectorStore;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
 
 import jakarta.transaction.Transactional;
@@ -39,12 +45,13 @@ public class DataLoader {
     private OpenAIEmbeddingService openAIEmbeddingService;  
 
     @Autowired
-    private ObjectMapper objectMapper;  
+    private ObjectMapper objectMapper; 
+     
     @Value("${azure.blob.connection-string}")
     private String connectionString;
 
     @Transactional
-    public String vectorizeBlobFile(String path, String sourceType) throws IOException, URISyntaxException {
+    public String vectorizeFileFactory(String path,String sourceType) throws IOException,URISyntaxException{
         if (!List.of("document", "solution", "requirement").contains(sourceType.toLowerCase())) {
             throw new IllegalArgumentException("Invalid sourceType. Must be 'document', 'solution', or 'requirement'");
         }
@@ -56,23 +63,22 @@ public class DataLoader {
         String extension = FilenameUtils.getExtension(filename);
 
         log.info("Processing file: {} as {}", filename, sourceType);
-        
-        List<Document> documentList;
-        switch (extension) {
-            case "pdf":
-                documentList = extractTextFromPdf(resource);
-                break;
-            case "txt":
-                documentList = extractTextFromTxt(resource);
-                break;
-            case "json":
-                documentList = extractTextFromJson(resource);
-                break;
-            default:
-                throw new IllegalArgumentException("Unsupported file type: " + extension);
+        List<Document> textChunks;
+        if(extension=="pdf"){
+            AbstractExtractorMethod pdfExtractorMethod=new PdfExtractorMethod();
+            textChunks=pdfExtractorMethod.factoryMethod().extractText(resource);
+        }else if(extension=="txt"){
+            AbstractExtractorMethod txtExtractorMethod=new TextExtractorMethod();
+            textChunks=txtExtractorMethod.factoryMethod().extractText(resource);
+        }else if(extension=="json"){
+            AbstractExtractorMethod jsonExtractorMethod=new JsonExtractorMethod();
+            textChunks=jsonExtractorMethod.factoryMethod().extractText(resource);
+        }else{
+            throw new IllegalArgumentException("Unsupported file type: " + extension);
         }
 
-        String content = documentList.stream().map(Document::getText).collect(Collectors.joining("\n"));
+        String content = textChunks.stream().map(Document::getText).collect(Collectors.joining("\n"));
+        
         log.info("Splitting document into chunks...");
         List<String> chunks = splitText(content, 1000);
 
@@ -82,6 +88,46 @@ public class DataLoader {
         log.info("Document ingestion completed.");
         return "Vectorization of Blob File Completed!";
     }
+
+    // @Transactional
+    // public String vectorizeFile(String path, String sourceType) throws IOException, URISyntaxException {
+    //     if (!List.of("document", "solution", "requirement").contains(sourceType.toLowerCase())) {
+    //         throw new IllegalArgumentException("Invalid sourceType. Must be 'document', 'solution', or 'requirement'");
+    //     }
+
+    //     InputStream inputStream = loadBlobStreamFromAzure(path);
+    //     InputStreamResource resource = new InputStreamResource(inputStream);
+
+    //     String filename = resource.getFilename();
+    //     String extension = FilenameUtils.getExtension(filename);
+
+    //     log.info("Processing file: {} as {}", filename, sourceType);
+        
+    //     List<Document> documentList;
+    //     switch (extension) {
+    //         case "pdf":
+    //             documentList = extractTextFromPdf(resource);
+    //             break;
+    //         case "txt":
+    //             documentList = extractTextFromTxt(resource);
+    //             break;
+    //         case "json":
+    //             documentList = extractTextFromJson(resource);
+    //             break;
+    //         default:
+    //             throw new IllegalArgumentException("Unsupported file type: " + extension);
+    //     }
+
+    //     String content = documentList.stream().map(Document::getText).collect(Collectors.joining("\n"));
+    //     log.info("Splitting document into chunks...");
+    //     List<String> chunks = splitText(content, 1000);
+
+    //     log.info("Generating embeddings...");
+    //     storeEmbeddings(chunks, extension, filename, sourceType);
+
+    //     log.info("Document ingestion completed.");
+    //     return "Vectorization of Blob File Completed!";
+    // }
 
     private List<Document> extractTextFromPdf(InputStreamResource resource) throws IOException {
         var pdfConfig = PdfDocumentReaderConfig.builder()
@@ -132,7 +178,7 @@ public class DataLoader {
 
 
     private void storeEmbeddings(List<String> chunks, String fileType, String fileName, String sourceType) {
-        List<VectorData> vectorDataList = new ArrayList<>();
+        List<VectorStore> vectorDataList = new ArrayList<>();
 
         for (String chunk : chunks) {
             float[] embedding = openAIEmbeddingService.getEmbedding(chunk);
@@ -146,7 +192,7 @@ public class DataLoader {
 
             try {
                 String jsonData = objectMapper.writeValueAsString(metadata);  
-                vectorDataList.add(new VectorData(sourceType, sourceId, chunk, jsonData, embedding));
+                vectorDataList.add(new VectorStore(sourceType, sourceId, chunk, jsonData, embedding));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Error converting metadata to JSON string", e);
             }
