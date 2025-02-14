@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.SolutionFile;
-import com.sharktank.interdepcollab.user.model.User;
+import com.sharktank.interdepcollab.user.model.AppUser;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -24,15 +24,15 @@ public class Solution {
     
     @ManyToOne
     @JoinColumn
-    private User createdBy;
+    private AppUser createdBy;
     
     @ManyToOne
     @JoinColumn
-    private User deliveryManager;
+    private AppUser deliveryManager;
     
     @ManyToOne
     @JoinColumn
-    private User pmo;
+    private AppUser pmo;
     
     private Instant createdDate;
     private Instant updatedDate;

@@ -18,8 +18,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "app_user")
-public class User implements Serializable {
+public class AppUser implements Serializable {
+
+    public static enum Role {
+        ROLE_ADMIN, ROLE_VIEWER, ROLE_USER;
+    }
+
     @Id
     @Column(unique = true, nullable = false)
     private Integer employeeId;
@@ -42,7 +46,8 @@ public class User implements Serializable {
     private String password;
 
     private String department;
-    private String role;
+    private String designation;
+    private Role role;
 
     // Requirements created by this user
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

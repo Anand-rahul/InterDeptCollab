@@ -3,7 +3,7 @@ package com.sharktank.interdepcollab.resource.model;
 import java.time.Instant;
 
 import com.sharktank.interdepcollab.file.model.*;
-import com.sharktank.interdepcollab.user.model.User;
+import com.sharktank.interdepcollab.user.model.AppUser;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -24,7 +24,7 @@ public class Resource {
     private ResourceFile file;
     
     @NotNull
-    private User createdBy;
+    private AppUser createdBy;
 
     private Instant uploadDate;
 }
