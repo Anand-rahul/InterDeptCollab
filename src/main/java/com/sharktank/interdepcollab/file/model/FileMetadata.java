@@ -25,6 +25,7 @@ public class FileMetadata {
     @NotNull
     @Column(nullable = false)
     private String docUrl;
+    private Long size;
 
     @NotNull
     @Column(nullable = false)

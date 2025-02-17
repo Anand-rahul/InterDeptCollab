@@ -1,11 +1,8 @@
 package com.sharktank.interdepcollab.solution.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.github.fge.jsonpatch.JsonPatchException;
+import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.solution.model.*;
 import com.sharktank.interdepcollab.solution.service.SolutionService;
+
+import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,11 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/solution")
 public class SolutionController {
 
-    @Autowired
-    private SolutionService solutionService;
+    private final SolutionService solutionService;
 
     @PostMapping
     public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionDTO solution) {
@@ -63,9 +63,9 @@ public class SolutionController {
     }
 
     @PostMapping("/{id}/file")
-    public ResponseEntity<Void> createFile(@PathVariable Integer id, @RequestParam("file") MultipartFile file) throws IOException {
-        solutionService.addFile(file, id);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<FileMetadata> createFile(@PathVariable Integer id, @RequestParam("file") MultipartFile file) throws IOException {
+        FileMetadata fileMetadata = solutionService.addFile(file, id);
+        return ResponseEntity.ok(fileMetadata);
     }
 
     @DeleteMapping("/{id}/file/{fileId}")
@@ -79,14 +79,5 @@ public class SolutionController {
         Map<String, Integer> files = solutionService.getAllFiles(id);
         return ResponseEntity.ok(files);
     }
-
-    @GetMapping("/{id}/file/{fileId}")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getMethodName(@PathVariable Integer id, @PathVariable Integer fileId) throws Exception{
-        StreamingOutput blobStream = solutionService.getFileStream(fileId);
-        return Response.ok(blobStream).build();
-    }
-    
-
 }
 

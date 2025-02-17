@@ -38,6 +38,7 @@ public class BlobManagementService {
                     .parentType(parentType)
                     .parentId(parentId)
                     .name(fileName)
+                    .size(file.getSize())
                     .build();
 
                     return fileMetadataRepository.save(fileMetadata);

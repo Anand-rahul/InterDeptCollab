@@ -1,17 +1,12 @@
 package com.sharktank.interdepcollab.solution.service;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.core.StreamingOutput;
-
 import org.modelmapper.ModelMapper;
-import org.slf4j.event.KeyValuePair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -171,11 +166,12 @@ public class SolutionService {
     }
 
     @Transactional
-    public void addFile(MultipartFile file, Integer solutionId) throws IOException {
+    public FileMetadata addFile(MultipartFile file, Integer solutionId) throws IOException {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
         FileMetadata fileMetadata = fileService.uploadFile(file, "SOLUTION", solution.getId());
         solution.getFiles().add(fileMetadata);
         solutionRepository.save(solution);
+        return fileMetadata;
     }
     
     @Transactional
@@ -189,32 +185,6 @@ public class SolutionService {
     public Map<String, Integer> getAllFiles(Integer solutionId) {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
         return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getName(), file -> file.getId()));
-    }
-
-    public static class FileStreamingOutput implements StreamingOutput {
-        private final InputStream blobStream;
-
-        public FileStreamingOutput(InputStream blobStream) {
-            this.blobStream = blobStream;
-        }
-
-        @Override
-        public void write(OutputStream output) throws IOException {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            try {
-                while ((bytesRead = blobStream.read(buffer)) != -1) {
-                    output.write(buffer, 0, bytesRead);
-                }
-            } finally {
-                blobStream.close();
-            }
-        }
-    }
-
-    public StreamingOutput getFileStream(Integer fileId) throws Exception {
-        InputStream blobStream = fileService.getFile(fileId);
-        return new FileStreamingOutput(blobStream);
     }
 
 }
