@@ -23,7 +23,12 @@ public class Message {
 
     public Message() {
     }
-
+    public Message(UUID chatGuid,String messageType, String messageText, Instant timestamp){
+        this.chatGuid=chatGuid;
+        this.messageText=messageText;
+        this.messageType=messageType;
+        this.timestamp=timestamp;
+    }
     public Message(long id, UUID chatGuid, String messageType, String messageText, Instant timestamp, String metaData) {
         this.id = id;
         this.chatGuid = chatGuid;

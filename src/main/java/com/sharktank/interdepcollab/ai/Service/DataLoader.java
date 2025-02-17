@@ -51,7 +51,31 @@ public class DataLoader {
     private String connectionString;
 
     @Transactional
-    public String vectorizeFileFactory(String path,String sourceType) throws IOException,URISyntaxException{
+    public <T> List<String> vectorizeObject(T obj, String sourceType) throws Exception {
+        if (!List.of("solution").contains(sourceType.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid sourceType. Must be 'solution'");
+        }
+        
+        log.info("Processing obj: {} as {}", obj.getClass().toString(), sourceType);
+        
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonContent;
+        try {
+            jsonContent = objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            log.error("Error converting object to JSON", e);
+            throw new RuntimeException("Error converting object to JSON", e);
+        }
+            
+        log.info("Generating embeddings...");
+        List<String> embeddingUUID=storeEmbeddings(List.of(new Document(jsonContent).getText()), "json", "", sourceType);
+        
+        log.info("Object ingestion completed.");
+        return embeddingUUID;
+    }
+
+    @Transactional
+    public List<String> vectorizeFileFactory(String path,String sourceType) throws Exception,IOException,URISyntaxException{
         if (!List.of("document", "solution", "requirement").contains(sourceType.toLowerCase())) {
             throw new IllegalArgumentException("Invalid sourceType. Must be 'document', 'solution', or 'requirement'");
         }
@@ -83,10 +107,10 @@ public class DataLoader {
         List<String> chunks = splitText(content, 1000);
 
         log.info("Generating embeddings...");
-        storeEmbeddings(chunks, extension, filename, sourceType);
+        List<String> embeddingsUUID=storeEmbeddings(chunks, extension, filename, sourceType);
 
         log.info("Document ingestion completed.");
-        return "Vectorization of Blob File Completed!";
+        return embeddingsUUID;
     }
 
     // @Transactional
@@ -177,13 +201,13 @@ public class DataLoader {
     }
 
 
-    private void storeEmbeddings(List<String> chunks, String fileType, String fileName, String sourceType) {
+    private List<String> storeEmbeddings(List<String> chunks, String fileType, String fileName, String sourceType)throws Exception {
         List<VectorStore> vectorDataList = new ArrayList<>();
-
+        List<String> embeddingsUUID=new ArrayList<>();
         for (String chunk : chunks) {
-            float[] embedding = openAIEmbeddingService.getEmbedding(chunk);
+            float[] embedding = openAIEmbeddingService.getEmbeddingHttp(chunk);
             UUID sourceId = UUID.randomUUID();
-
+            embeddingsUUID.add(sourceId.toString());
             Map<String, String> metadata = new HashMap<>();
             metadata.put("sourceType",sourceType);
             metadata.put("fileName", fileName);
@@ -199,5 +223,6 @@ public class DataLoader {
         }
 
         vectorRepository.saveAll(vectorDataList);  
+        return embeddingsUUID;
     }
 }
