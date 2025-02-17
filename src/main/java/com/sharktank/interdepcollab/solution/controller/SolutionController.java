@@ -1,6 +1,12 @@
 package com.sharktank.interdepcollab.solution.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -8,10 +14,16 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.sharktank.interdepcollab.solution.model.*;
 import com.sharktank.interdepcollab.solution.service.SolutionService;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+
+import org.springframework.web.multipart.MultipartFile;
+
 
 @RestController
 @RequestMapping("/api/solution")
@@ -49,4 +61,32 @@ public class SolutionController {
         Boolean likedSolution = solutionService.toggleLike(id);
         return ResponseEntity.ok(likedSolution);
     }
+
+    @PostMapping("/{id}/file")
+    public ResponseEntity<Void> createFile(@PathVariable Integer id, @RequestParam("file") MultipartFile file) throws IOException {
+        solutionService.addFile(file, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}/file/{fileId}")
+    public ResponseEntity<Void> deleteFile(@PathVariable Integer id, @PathVariable Integer fileId) throws IOException {
+        solutionService.removeFile(fileId, id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{id}/file")
+    public ResponseEntity<Map<String, Integer>> getAllFiles(@PathVariable Integer id) {
+        Map<String, Integer> files = solutionService.getAllFiles(id);
+        return ResponseEntity.ok(files);
+    }
+
+    @GetMapping("/{id}/file/{fileId}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getMethodName(@PathVariable Integer id, @PathVariable Integer fileId) throws Exception{
+        StreamingOutput blobStream = solutionService.getFileStream(fileId);
+        return Response.ok(blobStream).build();
+    }
+    
+
 }
+

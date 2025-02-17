@@ -41,6 +41,6 @@ public class Requirement {
     private Instant pickedDate;
     private Instant closedDate;
 
-    @OneToMany(mappedBy = "requirement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<RequirementFile> files;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<FileMetadata> files;
 }

@@ -20,8 +20,8 @@ public class Resource {
     private String name;
     
     @NotNull
-    @OneToOne(mappedBy = "resource", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private ResourceFile file;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private FileMetadata file;
     
     @NotNull
     private AppUser createdBy;

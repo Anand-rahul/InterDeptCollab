@@ -1,10 +1,20 @@
 package com.sharktank.interdepcollab.solution.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.StreamingOutput;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.event.KeyValuePair;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,6 +24,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.sharktank.interdepcollab.exception.InvalidUserException;
+import com.sharktank.interdepcollab.file.model.FileMetadata;
+import com.sharktank.interdepcollab.file.service.BlobManagementService;
 import com.sharktank.interdepcollab.solution.model.*;
 import com.sharktank.interdepcollab.solution.repository.SolutionRepository;
 import com.sharktank.interdepcollab.user.model.*;
@@ -29,6 +41,7 @@ public class SolutionService {
     private final SolutionRepository solutionRepository;
     private final ModelMapper solutionMapper;
     private final ObjectMapper objectMapper;
+    private final BlobManagementService fileService;
 
     public SolutionDTO createSolution(SolutionDTO solution) throws InvalidUserException {
         AppUser user = userService.getLoggedInUser();
@@ -156,4 +169,52 @@ public class SolutionService {
 
         return userAction;
     }
+
+    @Transactional
+    public void addFile(MultipartFile file, Integer solutionId) throws IOException {
+        Solution solution = solutionRepository.findById(solutionId).orElseThrow();
+        FileMetadata fileMetadata = fileService.uploadFile(file, "SOLUTION", solution.getId());
+        solution.getFiles().add(fileMetadata);
+        solutionRepository.save(solution);
+    }
+    
+    @Transactional
+    public void removeFile(Integer fileId, Integer solutionId) throws IOException {
+        Solution solution = solutionRepository.findById(solutionId).orElseThrow();
+        FileMetadata fileMetadata = fileService.deleteFile(fileId);
+        solution.getFiles().remove(fileMetadata);
+        solutionRepository.save(solution);
+    }
+
+    public Map<String, Integer> getAllFiles(Integer solutionId) {
+        Solution solution = solutionRepository.findById(solutionId).orElseThrow();
+        return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getName(), file -> file.getId()));
+    }
+
+    public static class FileStreamingOutput implements StreamingOutput {
+        private final InputStream blobStream;
+
+        public FileStreamingOutput(InputStream blobStream) {
+            this.blobStream = blobStream;
+        }
+
+        @Override
+        public void write(OutputStream output) throws IOException {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            try {
+                while ((bytesRead = blobStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                blobStream.close();
+            }
+        }
+    }
+
+    public StreamingOutput getFileStream(Integer fileId) throws Exception {
+        InputStream blobStream = fileService.getFile(fileId);
+        return new FileStreamingOutput(blobStream);
+    }
+
 }

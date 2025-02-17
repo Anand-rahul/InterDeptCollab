@@ -8,5 +8,10 @@
     "name": "com.sharktank.jwt.expiration-time",
     "type": "java.lang.String",
     "description": "Expiration time for JWT token"
+  },
+  {
+    "name": "azure.blob.connection-string",
+    "type": "java.lang.String",
+    "description": "Connection string used for blob container used for doc upload"
   }
 ]}
