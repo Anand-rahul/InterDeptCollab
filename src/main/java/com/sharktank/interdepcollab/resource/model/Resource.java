@@ -18,7 +18,7 @@ public class Resource {
     
     @NotNull
     private String name;
-    
+
     @NotNull
     @OneToOne(mappedBy = "resource", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private ResourceFile file;

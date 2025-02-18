@@ -2,11 +2,10 @@ package com.sharktank.interdepcollab.ai.Model;
 
 import jakarta.persistence.*;
 import java.util.UUID;
-import com.fasterxml.jackson.databind.JsonNode;
 
 @Entity
 @Table(name = "vectors")
-public class VectorData {
+public class VectorStore {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,9 +26,9 @@ public class VectorData {
     @Column(columnDefinition = "vector(1536)", nullable = false)
     private float[] embedding;
 
-    public VectorData() {}
+    public VectorStore() {}
 
-    public VectorData(String sourceType, UUID sourceId, String text, String jsonData, float[] embedding) {
+    public VectorStore(String sourceType, UUID sourceId, String text, String jsonData, float[] embedding) {
         this.sourceType = sourceType;
         this.sourceId = sourceId;
         this.text = text;
