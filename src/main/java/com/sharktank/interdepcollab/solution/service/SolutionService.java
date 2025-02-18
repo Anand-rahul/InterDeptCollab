@@ -27,8 +27,10 @@ import com.sharktank.interdepcollab.user.model.*;
 import com.sharktank.interdepcollab.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SolutionService {
 
@@ -38,13 +40,15 @@ public class SolutionService {
     private final ObjectMapper objectMapper;
     private final BlobManagementService fileService;
 
-    public SolutionDTO createSolution(SolutionDTO solution) throws InvalidUserException {
+    @Transactional
+    public SolutionDTO createSolution(SolutionInput solution) throws InvalidUserException {
         AppUser user = userService.getLoggedInUser();
 
-        if (user == null || solution.getCreatedBy() == user.getEmail()) {
+        if (user == null) {
             throw new InvalidUserException("Invalid Creator user");
         }
 
+        log.info("Solution input: {}", solution.toString());
         Solution finalSolution = solutionMapper.map(solution, Solution.class);
         finalSolution.setCreatedBy(user);
 
@@ -56,10 +60,21 @@ public class SolutionService {
         finalSolution.setDeliveryManager(deliveryManager);
         finalSolution.setPmo(pmo);
 
+        log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
-        solution = solutionMapper.map(finalSolution, SolutionDTO.class);
+                
+        log.info("Files in solution: {}",solution.getFiles().toString());
+        for (Integer fileId : solution.getFiles()) {
+            FileMetadata file = fileService.tagFileToParent(fileId, "SOLUTION", finalSolution.getId());
+            log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
+            finalSolution.getFiles().add(file);
+        }
 
-        return solution;
+        finalSolution = solutionRepository.save(finalSolution);
+
+        SolutionDTO solutionOutput = solutionMapper.map(finalSolution, SolutionDTO.class);
+
+        return solutionOutput;
     }
 
     public SolutionDTO patchSolution(Integer id, JsonPatch jsonPatch)
@@ -68,18 +83,22 @@ public class SolutionService {
         JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
         existingSolution = objectMapper.treeToValue(patched, Solution.class);
 
-        return this.updateSolution(id, solutionMapper.map(existingSolution, SolutionDTO.class));
+        return this.updateSolution(id, solutionMapper.map(existingSolution, SolutionInput.class));
     }
 
-    public SolutionDTO updateSolution(Integer id, SolutionDTO solution) {
+    public SolutionDTO updateSolution(Integer id, SolutionInput solution) {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
-        existingSolution.setName(solution.getName());
-        existingSolution.setDepartment(solution.getDepartment());
-
-        if (solution.getCreatedBy() != null
-                && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
-            throw new InvalidUserException("Cannot change the creator of the solution");
+        if (solution.getName() != null && !solution.getName().isEmpty()) {
+            existingSolution.setName(solution.getName());
         }
+        if (solution.getDepartment() != null && !solution.getDepartment().isEmpty()) {
+            existingSolution.setDepartment(solution.getDepartment());
+        }
+
+        // if (solution.getCreatedBy() != null
+        //         && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
+        //     throw new InvalidUserException("Cannot change the creator of the solution");
+        // }
 
         if (solution.getDeliveryManager() != null
                 && !solution.getDeliveryManager().equals(existingSolution.getDeliveryManager().getEmail())) {
@@ -98,14 +117,11 @@ public class SolutionService {
         return solutionMapper.map(existingSolution, SolutionDTO.class);
     }
 
-    //TODO: Remove unecessary fields
     public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
         Page<Solution> solutions = solutionRepository.findAll(pageable);
         return solutions.map(solution -> solutionMapper.map(solution, SolutionDTO.class));
     }
 
-    // BUG: Is viewed is not being set
-    // BUG: User details are being sent
     @Transactional
     public SolutionDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();

@@ -45,17 +45,24 @@ public class AppUser implements Serializable {
 
     @NotNull
     @Column(unique = true, nullable = false)
+    @ToString.Exclude
     private String password;
 
     private String department;
     private String designation;
+
+    @ToString.Exclude
     private Role role;
 
     // Requirements created by this user
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Requirement> createdRequirements;
 
     // Requirements assigned to this user
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "assignedTo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Requirement> assignedRequirements;
         
