@@ -7,7 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.sharktank.interdepcollab.devops.model.UserStory;
-import com.sharktank.interdepcollab.file.model.SolutionFile;
+import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.user.model.AppUser;
 
 import jakarta.persistence.*;
@@ -49,8 +49,8 @@ public class Solution {
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<FAQ> faqs;
 
-    @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<SolutionFile> files;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<FileMetadata> files;
 
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserStory> userStories;
