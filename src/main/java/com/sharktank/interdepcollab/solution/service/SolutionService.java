@@ -36,7 +36,7 @@ public class SolutionService {
 
     private final UserService userService;
     private final SolutionRepository solutionRepository;
-    private final ModelMapper solutionMapper;
+    private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final BlobManagementService fileService;
 
@@ -49,7 +49,7 @@ public class SolutionService {
         }
 
         log.info("Solution input: {}", solution.toString());
-        Solution finalSolution = solutionMapper.map(solution, Solution.class);
+        Solution finalSolution = modelMapper.map(solution, Solution.class);
         finalSolution.setCreatedBy(user);
 
         AppUser deliveryManager = userService.getUserByEmail(solution.getDeliveryManager())
@@ -72,7 +72,7 @@ public class SolutionService {
 
         finalSolution = solutionRepository.save(finalSolution);
 
-        SolutionDTO solutionOutput = solutionMapper.map(finalSolution, SolutionDTO.class);
+        SolutionDTO solutionOutput = modelMapper.map(finalSolution, SolutionDTO.class);
 
         return solutionOutput;
     }
@@ -83,7 +83,7 @@ public class SolutionService {
         JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
         existingSolution = objectMapper.treeToValue(patched, Solution.class);
 
-        return this.updateSolution(id, solutionMapper.map(existingSolution, SolutionInput.class));
+        return this.updateSolution(id, modelMapper.map(existingSolution, SolutionInput.class));
     }
 
     public SolutionDTO updateSolution(Integer id, SolutionInput solution) {
@@ -114,19 +114,19 @@ public class SolutionService {
         }
 
         existingSolution = solutionRepository.save(existingSolution);
-        return solutionMapper.map(existingSolution, SolutionDTO.class);
+        return modelMapper.map(existingSolution, SolutionDTO.class);
     }
 
     public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
         Page<Solution> solutions = solutionRepository.findAll(pageable);
-        return solutions.map(solution -> solutionMapper.map(solution, SolutionDTO.class));
+        return solutions.map(solution -> modelMapper.map(solution, SolutionDTO.class));
     }
 
     @Transactional
     public SolutionDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
-        SolutionDTO dto = solutionMapper.map(solution, SolutionDTO.class);
+        SolutionDTO dto = modelMapper.map(solution, SolutionDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);
         
@@ -200,7 +200,7 @@ public class SolutionService {
 
     public Map<String, Integer> getAllFiles(Integer solutionId) {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
-        return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getName(), file -> file.getId()));
+        return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getOriginalName(), file -> file.getId()));
     }
 
 }

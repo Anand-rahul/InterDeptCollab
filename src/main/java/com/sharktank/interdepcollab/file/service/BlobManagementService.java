@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.azure.core.util.polling.LongRunningOperationStatus;
 import com.azure.core.util.polling.PollResponse;
-import com.azure.core.util.polling.SyncPoller;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
@@ -39,42 +38,35 @@ public class BlobManagementService {
     @Value("${spring.cloud.azure.storage.blob.container-name}")
     private String containerName;
 
-    @Transactional
-    public FileMetadata uploadFile(MultipartFile file) throws IOException {
+    private FileMetadata createFile(MultipartFile file, String filePrefix) throws IOException{
         String fileName = file.getOriginalFilename();
-        String blobFileName = "UNTAGGED_" + fileName;
+        String blobFileName = filePrefix + fileName;
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(containerName).getBlobClient(blobFileName);
 
         blobClient.upload(file.getInputStream(), file.getSize(), false);
         String fileUrl = blobClient.getBlobUrl();
 
-        FileMetadata fileMetadata = FileMetadata.builder()
+        return FileMetadata.builder()
                 .docUrl(fileUrl)
                 .name(blobFileName)
                 .originalName(fileName)
                 .size(file.getSize())
                 .build();
+    }
 
+    @Transactional
+    public FileMetadata uploadFile(MultipartFile file) throws IOException {
+        FileMetadata fileMetadata = createFile(file, "UNTAGGED_");
         return fileMetadataRepository.save(fileMetadata);
     }
 
     @Transactional
     public FileMetadata uploadFile(MultipartFile file, String parentType, Integer parentId) throws IOException {
-        String fileName = file.getOriginalFilename();
-        String blobFileName = String.format("%s_%s_%s", parentType, parentId, fileName);
-        BlobClient blobClient = blobServiceClient.getBlobContainerClient(containerName).getBlobClient(blobFileName);
 
-        blobClient.upload(file.getInputStream(), file.getSize(), true);
-        String fileUrl = blobClient.getBlobUrl();
-
-        FileMetadata fileMetadata = FileMetadata.builder()
-                .docUrl(fileUrl)
-                .parentType(parentType)
-                .parentId(parentId)
-                .name(blobFileName)
-                .originalName(fileName)
-                .size(file.getSize())
-                .build();
+        String blobFilePrefix = String.format("%s_%s_", parentType, parentId);
+        FileMetadata fileMetadata = createFile(file, blobFilePrefix);
+        fileMetadata.setParentType(parentType);
+        fileMetadata.setParentId(parentId);
 
         return fileMetadataRepository.save(fileMetadata);
     }

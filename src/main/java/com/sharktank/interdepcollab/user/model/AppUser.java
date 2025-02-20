@@ -3,8 +3,6 @@ package com.sharktank.interdepcollab.user.model;
 import java.util.Set;
 import java.io.Serializable;
 
-import com.sharktank.interdepcollab.requirement.model.Requirement;
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -53,18 +51,6 @@ public class AppUser implements Serializable {
 
     @ToString.Exclude
     private Role role;
-
-    // Requirements created by this user
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Requirement> createdRequirements;
-
-    // Requirements assigned to this user
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    @OneToMany(mappedBy = "assignedTo", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Requirement> assignedRequirements;
         
     // Actions done by this user
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
