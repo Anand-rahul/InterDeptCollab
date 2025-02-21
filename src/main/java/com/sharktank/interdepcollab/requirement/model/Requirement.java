@@ -34,9 +34,7 @@ public class Requirement {
     private AppUser assignedTo;
     
     @ManyToOne
-    @NotNull
     @JoinColumn(nullable = false)
-    @CreatedBy
     private AppUser createdBy;
     
     @Enumerated(EnumType.STRING)

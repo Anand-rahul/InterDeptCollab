@@ -65,7 +65,7 @@ public class SolutionService {
                 
         log.info("Files in solution: {}",solution.getFiles().toString());
         for (Integer fileId : solution.getFiles()) {
-            FileMetadata file = fileService.tagFileToParent(fileId, "SOLUTION", finalSolution.getId());
+            FileMetadata file = fileService.tagFileToParent(fileId, finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
             log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
             finalSolution.getFiles().add(file);
         }
@@ -184,7 +184,7 @@ public class SolutionService {
     @Transactional
     public FileMetadata addFile(MultipartFile file, Integer solutionId) throws IOException {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
-        FileMetadata fileMetadata = fileService.uploadFile(file, "SOLUTION", solution.getId());
+        FileMetadata fileMetadata = fileService.uploadFile(file, solution.getClass().getSimpleName().toUpperCase(), solution.getId());
         solution.getFiles().add(fileMetadata);
         solutionRepository.save(solution);
         return fileMetadata;
