@@ -5,6 +5,8 @@ import java.time.Instant;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -24,24 +26,26 @@ public class FileMetadata {
 
     @NotNull
     @Column(nullable = false)
+    @JsonIgnore
     private String docUrl;
     private Long size;
 
-    @NotNull
-    @Column(nullable = false)
     private String parentType;
     
-    @NotNull
-    @Column(nullable = false)
     private Integer parentId;
 
     @NotNull
     @Column(nullable = false)
     private String name;
 
+    @NotNull
+    @Column(nullable = false)
+    private String originalName;
+
     @CreationTimestamp
     private Instant createdDate;
     
     @UpdateTimestamp
     private Instant updateDate;
+
 }

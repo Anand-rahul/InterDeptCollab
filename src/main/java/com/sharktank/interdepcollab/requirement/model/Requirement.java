@@ -3,6 +3,10 @@ package com.sharktank.interdepcollab.requirement.model;
 import java.time.Instant;
 import java.util.Set;
 
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.*;
 import com.sharktank.interdepcollab.user.model.AppUser;
@@ -30,14 +34,17 @@ public class Requirement {
     private AppUser assignedTo;
     
     @ManyToOne
-    @NotNull
     @JoinColumn(nullable = false)
     private AppUser createdBy;
     
     @Enumerated(EnumType.STRING)
     private Status status;
     
+    @CreationTimestamp
     private Instant createdDate;
+    @UpdateTimestamp
+    private Instant updatedDate;
+
     private Instant pickedDate;
     private Instant closedDate;
 

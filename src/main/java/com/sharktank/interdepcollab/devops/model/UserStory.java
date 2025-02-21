@@ -1,5 +1,6 @@
 package com.sharktank.interdepcollab.devops.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sharktank.interdepcollab.requirement.model.Requirement;
 import com.sharktank.interdepcollab.solution.model.Solution;
 
@@ -23,9 +24,11 @@ public class UserStory {
     
     @OneToOne
     @JoinColumn
+    @JsonIgnore
     private Requirement requirement;
     
     @ManyToOne
     @JoinColumn
+    @JsonIgnore
     private Solution solution;
 }

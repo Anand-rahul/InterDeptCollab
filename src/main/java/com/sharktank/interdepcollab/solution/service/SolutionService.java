@@ -27,25 +27,29 @@ import com.sharktank.interdepcollab.user.model.*;
 import com.sharktank.interdepcollab.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class SolutionService {
 
     private final UserService userService;
     private final SolutionRepository solutionRepository;
-    private final ModelMapper solutionMapper;
+    private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final BlobManagementService fileService;
 
-    public SolutionDTO createSolution(SolutionDTO solution) throws InvalidUserException {
+    @Transactional
+    public SolutionDTO createSolution(SolutionInput solution) throws InvalidUserException {
         AppUser user = userService.getLoggedInUser();
 
-        if (user == null || solution.getCreatedBy() == user.getEmail()) {
+        if (user == null) {
             throw new InvalidUserException("Invalid Creator user");
         }
 
-        Solution finalSolution = solutionMapper.map(solution, Solution.class);
+        log.info("Solution input: {}", solution.toString());
+        Solution finalSolution = modelMapper.map(solution, Solution.class);
         finalSolution.setCreatedBy(user);
 
         AppUser deliveryManager = userService.getUserByEmail(solution.getDeliveryManager())
@@ -56,10 +60,21 @@ public class SolutionService {
         finalSolution.setDeliveryManager(deliveryManager);
         finalSolution.setPmo(pmo);
 
+        log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
-        solution = solutionMapper.map(finalSolution, SolutionDTO.class);
+                
+        log.info("Files in solution: {}",solution.getFiles().toString());
+        for (Integer fileId : solution.getFiles()) {
+            FileMetadata file = fileService.tagFileToParent(fileId, finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
+            log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
+            finalSolution.getFiles().add(file);
+        }
 
-        return solution;
+        finalSolution = solutionRepository.save(finalSolution);
+
+        SolutionDTO solutionOutput = modelMapper.map(finalSolution, SolutionDTO.class);
+
+        return solutionOutput;
     }
 
     public SolutionDTO patchSolution(Integer id, JsonPatch jsonPatch)
@@ -68,18 +83,22 @@ public class SolutionService {
         JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
         existingSolution = objectMapper.treeToValue(patched, Solution.class);
 
-        return this.updateSolution(id, solutionMapper.map(existingSolution, SolutionDTO.class));
+        return this.updateSolution(id, modelMapper.map(existingSolution, SolutionInput.class));
     }
 
-    public SolutionDTO updateSolution(Integer id, SolutionDTO solution) {
+    public SolutionDTO updateSolution(Integer id, SolutionInput solution) {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
-        existingSolution.setName(solution.getName());
-        existingSolution.setDepartment(solution.getDepartment());
-
-        if (solution.getCreatedBy() != null
-                && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
-            throw new InvalidUserException("Cannot change the creator of the solution");
+        if (solution.getName() != null && !solution.getName().isEmpty()) {
+            existingSolution.setName(solution.getName());
         }
+        if (solution.getDepartment() != null && !solution.getDepartment().isEmpty()) {
+            existingSolution.setDepartment(solution.getDepartment());
+        }
+
+        // if (solution.getCreatedBy() != null
+        //         && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
+        //     throw new InvalidUserException("Cannot change the creator of the solution");
+        // }
 
         if (solution.getDeliveryManager() != null
                 && !solution.getDeliveryManager().equals(existingSolution.getDeliveryManager().getEmail())) {
@@ -95,22 +114,19 @@ public class SolutionService {
         }
 
         existingSolution = solutionRepository.save(existingSolution);
-        return solutionMapper.map(existingSolution, SolutionDTO.class);
+        return modelMapper.map(existingSolution, SolutionDTO.class);
     }
 
-    //TODO: Remove unecessary fields
     public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
         Page<Solution> solutions = solutionRepository.findAll(pageable);
-        return solutions.map(solution -> solutionMapper.map(solution, SolutionDTO.class));
+        return solutions.map(solution -> modelMapper.map(solution, SolutionDTO.class));
     }
 
-    // BUG: Is viewed is not being set
-    // BUG: User details are being sent
     @Transactional
     public SolutionDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
-        SolutionDTO dto = solutionMapper.map(solution, SolutionDTO.class);
+        SolutionDTO dto = modelMapper.map(solution, SolutionDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);
         
@@ -168,7 +184,7 @@ public class SolutionService {
     @Transactional
     public FileMetadata addFile(MultipartFile file, Integer solutionId) throws IOException {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
-        FileMetadata fileMetadata = fileService.uploadFile(file, "SOLUTION", solution.getId());
+        FileMetadata fileMetadata = fileService.uploadFile(file, solution.getClass().getSimpleName().toUpperCase(), solution.getId());
         solution.getFiles().add(fileMetadata);
         solutionRepository.save(solution);
         return fileMetadata;
@@ -184,7 +200,7 @@ public class SolutionService {
 
     public Map<String, Integer> getAllFiles(Integer solutionId) {
         Solution solution = solutionRepository.findById(solutionId).orElseThrow();
-        return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getName(), file -> file.getId()));
+        return solution.getFiles().stream().collect(Collectors.toMap(file -> file.getOriginalName(), file -> file.getId()));
     }
 
 }

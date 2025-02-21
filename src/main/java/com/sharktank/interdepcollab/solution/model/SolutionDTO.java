@@ -2,6 +2,9 @@ package com.sharktank.interdepcollab.solution.model;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sharktank.interdepcollab.user.model.AppUser;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +17,12 @@ public class SolutionDTO {
     private String name;
     private String department;
 
-    private String createdBy;
-    private String deliveryManager;
-    private String pmo;
+    @JsonIgnore
+    private AppUser createdBy;
+    @JsonIgnore
+    private AppUser deliveryManager;
+    @JsonIgnore
+    private AppUser pmo;
 
     //TODO: Ensure this can't be updated by the user
     private Integer likeCount;
@@ -26,4 +32,16 @@ public class SolutionDTO {
 
     private Instant createdDate;
     private Instant updatedDate;
+    
+    public String getCreatedBy(){
+        return createdBy.getEmail();
+    }
+     
+    public String getDeliveryManager(){
+        return createdBy.getEmail();
+    }
+     
+    public String getPMO(){
+        return createdBy.getEmail();
+    }
 }

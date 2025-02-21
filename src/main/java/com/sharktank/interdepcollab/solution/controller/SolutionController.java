@@ -1,9 +1,5 @@
 package com.sharktank.interdepcollab.solution.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,7 +15,6 @@ import com.sharktank.interdepcollab.solution.service.SolutionService;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -33,13 +28,13 @@ public class SolutionController {
     private final SolutionService solutionService;
 
     @PostMapping
-    public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionDTO solution) {
+    public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionInput solution) {
         SolutionDTO createdSolution = solutionService.createSolution(solution);
         return ResponseEntity.ok(createdSolution);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SolutionDTO> updateSolution(@PathVariable Integer id, @RequestBody SolutionDTO solution) throws JsonPatchException {
+    public ResponseEntity<SolutionDTO> updateSolution(@PathVariable Integer id, @RequestBody SolutionInput solution) throws JsonPatchException {
         SolutionDTO updatedSolution = solutionService.updateSolution(id, solution);
         return ResponseEntity.ok(updatedSolution);
     }
