@@ -5,17 +5,17 @@ import com.azure.storage.blob.BlobClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sharktank.interdepcollab.ai.ExtractorFactory.AbstractExtractorMethod;
-import com.sharktank.interdepcollab.ai.ExtractorFactory.ITextExtractor;
 import com.sharktank.interdepcollab.ai.ExtractorFactory.JsonExtractorMethod;
 import com.sharktank.interdepcollab.ai.ExtractorFactory.PdfExtractorMethod;
-import com.sharktank.interdepcollab.ai.ExtractorFactory.PdfTextExtractor;
 import com.sharktank.interdepcollab.ai.ExtractorFactory.TextExtractorMethod;
-import com.sharktank.interdepcollab.ai.ExtractorFactory.TxtTextExtractor;
 import com.sharktank.interdepcollab.ai.Model.VectorStore;
+import com.sharktank.interdepcollab.ai.ParserStrategy.JsonParseStrategy;
+import com.sharktank.interdepcollab.ai.ParserStrategy.ParsingStrategyFactory;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.ExtractedTextFormatter;
@@ -45,19 +45,51 @@ public class DataLoader {
     private OpenAIEmbeddingService openAIEmbeddingService;  
 
     @Autowired
+    private ParsingStrategyFactory parsingStrategyFactory;
+
+    @Autowired
     private ObjectMapper objectMapper; 
      
     @Value("${azure.blob.connection-string}")
     private String connectionString;
 
+
     @Transactional
-    public <T> List<String> vectorizeObject(T obj, String sourceType) throws Exception {
+    public  List<String> vectorizeObjectStrategy(String obj, String sourceType, String format) throws Exception {
         if (!List.of("solution").contains(sourceType.toLowerCase())) {
             throw new IllegalArgumentException("Invalid sourceType. Must be 'solution'");
         }
         
-        log.info("Processing obj: {} as {}", obj.getClass().toString(), sourceType);
+        log.info("Processing obj: {}, format: {}", obj, format);
         
+        JsonParseStrategy strategy = parsingStrategyFactory.getStrategy(format);
+        
+        List<Document> documents;
+        try {
+            documents = strategy.parse(obj);
+        } catch (JsonProcessingException e) {
+            log.error("Error parsing JSON with format: {}", format, e);
+            throw new RuntimeException("Error parsing JSON", e);
+        }
+        
+        log.info("Generating embeddings for {} documents...", documents.size());
+        List<String> textContents = documents.stream()
+                .map(Document::getText)
+                .collect(Collectors.toList());
+        
+        List<String> embeddingUUIDs = storeEmbeddings(textContents, "json", "", sourceType);
+        
+        log.info("Object ingestion completed for {} documents.", documents.size());
+        return embeddingUUIDs;
+    }
+
+    @Transactional
+    public <T> List<String> vectorizeObject(String obj, String sourceType) throws Exception {
+        if (!List.of("solution").contains(sourceType.toLowerCase())) {
+            throw new IllegalArgumentException("Invalid sourceType. Must be 'solution'");
+        }
+        
+        log.info("Processing obj: {}", obj);
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonContent;
         try {
@@ -220,6 +252,9 @@ public class DataLoader {
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Error converting metadata to JSON string", e);
             }
+        }
+        for (VectorStore vs : vectorDataList) {
+            log.info(vs.toString());
         }
 
         vectorRepository.saveAll(vectorDataList);  

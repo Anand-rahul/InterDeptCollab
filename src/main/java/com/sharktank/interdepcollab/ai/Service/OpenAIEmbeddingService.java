@@ -3,6 +3,9 @@ package com.sharktank.interdepcollab.ai.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.json.JSONObject;
 
 import java.net.URI;
@@ -13,6 +16,7 @@ import java.net.http.HttpResponse;
 import org.json.JSONArray;
 
 @Service
+@Slf4j
 public class OpenAIEmbeddingService {
 
     @Value("${spring.azure.ai.embedding.model.url}")
@@ -43,6 +47,8 @@ public class OpenAIEmbeddingService {
     
     
     public float[] getEmbeddingHttp(String text) throws Exception {
+        log.info(EmbeddingModelUsageEndpoint);
+        log.info(API_KEY);
         HttpClient client = HttpClient.newHttpClient();
 
         JSONObject requestBody = new JSONObject();
@@ -52,13 +58,16 @@ public class OpenAIEmbeddingService {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(EmbeddingModelUsageEndpoint))
                 .header("Content-Type", "application/json")
-                .header("api-key", "API_KEY") 
+                .header("api-key", API_KEY) 
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
                 .build();
-
+        log.info(request.uri().toString());
+        log.info(request.headers().firstValue("api-key").toString());
+        log.info(requestBody.toString());
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         JSONObject jsonResponse = new JSONObject(response.body());
+        log.info("Embedding Json {}",jsonResponse);
         /*
         Expected JSON response structure:
         {

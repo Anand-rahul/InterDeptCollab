@@ -1,10 +1,14 @@
 package com.sharktank.interdepcollab.ai.Model;
 
 import jakarta.persistence.*;
+import lombok.ToString;
+
 import java.util.UUID;
+
 
 @Entity
 @Table(name = "vectors")
+@ToString
 public class VectorStore {
 
     @Id
