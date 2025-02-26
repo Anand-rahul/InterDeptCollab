@@ -1,0 +1,115 @@
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">BITS HUB</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Upload Solution</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>🚀 Upload a New Solution</h1>
+        <p>Register your solution for cross-team discovery and reuse.</p>
+    </div>
+
+    <div class="container-box">
+        
+        <!-- Solution Overview -->
+        <div class="section-title">📌 Solution Overview</div>
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Solution Title</label>
+                <input type="text" class="form-control" placeholder="Enter solution title">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Short Description</label>
+                <input type="text" class="form-control" placeholder="Brief introduction">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Business Problem Addressed</label>
+                <textarea class="form-control" rows="2" placeholder="Explain the issue being solved"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Key Benefits & Expected Impact</label>
+                <textarea class="form-control" rows="2" placeholder="Describe efficiency, cost savings"></textarea>
+            </div>
+        </div>
+
+        <!-- Categorization -->
+        <div class="section-title">📂 Categorization</div>
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Solution Category</label>
+                <select class="form-select">
+                    <option>Functional</option>
+                    <option>Technical</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tags</label>
+                <input type="text" class="form-control" placeholder="Enter relevant tags">
+            </div>
+        </div>
+
+        <!-- Technical Infra Details -->
+        <div class="section-title">🛠 Technical Infra Details</div>
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Infra Name</label>
+                <input type="text" class="form-control" placeholder="Enter infrastructure name">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Infra Type</label>
+                <select class="form-select">
+                    <option>Database</option>
+                    <option>API</option>
+                    <option>Compute</option>
+                    <option>Storage</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Technology Stack</label>
+                <input type="text" class="form-control" placeholder="E.g., Azure, AWS, Java, Python">
+            </div>
+        </div>
+
+        <!-- Supporting Documents -->
+        <div class="section-title">📎 Upload Supporting Documents</div>
+        <div class="file-upload">Drag & Drop Files or Click to Upload</div>
+        <p style="font-size: 12px; color: gray;">Allowed formats: PDF, DOCX, PPT, XLSX</p>
+
+        <!-- Solution Ownership -->
+        <div class="section-title">👤 Solution Ownership</div>
+        <div class="form-container">
+            <div class="form-group">
+                <label class="form-label">Solution Owner</label>
+                <input type="text" class="form-control" placeholder="Enter your name" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <select class="form-select">
+                    <option>IT</option>
+                    <option>Operations</option>
+                    <option>Marketing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Email</label>
+                <input type="email" class="form-control" placeholder="Your email" disabled>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Floating Save & Submit Buttons -->
+    <button class="floating-save">💾 Save as Draft</button>
+    <button class="floating-submit">🚀 Submit for Review</button>
+
+</body>
+</html>

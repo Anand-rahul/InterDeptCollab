@@ -2,6 +2,7 @@ package com.sharktank.interdepcollab.solution.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 @Entity
@@ -17,5 +18,6 @@ public class FAQ {
     
     @ManyToOne
     @JoinColumn
+    @ToString.Exclude
     private Solution solution;
 }

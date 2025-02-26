@@ -1,7 +1,7 @@
 package com.sharktank.interdepcollab.solution.service;
 
 import java.io.IOException;
-
+import java.util.Set;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public class SolutionService {
     private final BlobManagementService fileService;
 
     @Transactional
-    public SolutionDTO createSolution(SolutionInput solution) throws InvalidUserException {
+    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException {
         AppUser user = userService.getLoggedInUser();
 
         if (user == null) {
@@ -72,12 +72,12 @@ public class SolutionService {
 
         finalSolution = solutionRepository.save(finalSolution);
 
-        SolutionDTO solutionOutput = modelMapper.map(finalSolution, SolutionDTO.class);
+        SolutionDetailedDTO solutionOutput = modelMapper.map(finalSolution, SolutionDetailedDTO.class);
 
         return solutionOutput;
     }
 
-    public SolutionDTO patchSolution(Integer id, JsonPatch jsonPatch)
+    public SolutionDetailedDTO patchSolution(Integer id, JsonPatch jsonPatch)
             throws JsonPatchException, JsonProcessingException, NoSuchElementException {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
         JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
@@ -86,13 +86,28 @@ public class SolutionService {
         return this.updateSolution(id, modelMapper.map(existingSolution, SolutionInput.class));
     }
 
-    public SolutionDTO updateSolution(Integer id, SolutionInput solution) {
+    public SolutionDetailedDTO updateSolution(Integer id, SolutionInput solution) {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
-        if (solution.getName() != null && !solution.getName().isEmpty()) {
-            existingSolution.setName(solution.getName());
+        if (solution.getTitle() != null && !solution.getTitle().isEmpty()) {
+            existingSolution.setTitle(solution.getTitle());
+        }
+        if (solution.getDescription() != null && !solution.getDescription().isEmpty()) {
+            existingSolution.setDescription(solution.getDescription());
+        }
+        if (solution.getCategory() != null && !solution.getCategory().isEmpty()) {
+            existingSolution.setCategory(solution.getCategory());
         }
         if (solution.getDepartment() != null && !solution.getDepartment().isEmpty()) {
             existingSolution.setDepartment(solution.getDepartment());
+        }
+        if (solution.getImpact() != null && !solution.getImpact().isEmpty()) {
+            existingSolution.setImpact(solution.getImpact());
+        }
+        if (solution.getTags() != null && !solution.getTags().isEmpty()) {
+            existingSolution.setTags(solution.getTags());
+        }
+        if (solution.getProblemStatement() != null && !solution.getProblemStatement().isEmpty()) {
+            existingSolution.setProblemStatement(solution.getProblemStatement());
         }
 
         // if (solution.getCreatedBy() != null
@@ -114,19 +129,19 @@ public class SolutionService {
         }
 
         existingSolution = solutionRepository.save(existingSolution);
-        return modelMapper.map(existingSolution, SolutionDTO.class);
+        return modelMapper.map(existingSolution, SolutionDetailedDTO.class);
     }
 
-    public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
+    public Page<SolutionBaseDTO> getAllSolutions(Pageable pageable) {
         Page<Solution> solutions = solutionRepository.findAll(pageable);
-        return solutions.map(solution -> modelMapper.map(solution, SolutionDTO.class));
+        return solutions.map(solution -> modelMapper.map(solution, SolutionBaseDTO.class));
     }
 
     @Transactional
-    public SolutionDTO getSolution(Integer id) {
+    public SolutionDetailedDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
-        SolutionDTO dto = modelMapper.map(solution, SolutionDTO.class);
+        SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);
         
@@ -141,6 +156,14 @@ public class SolutionService {
         dto.setIsLiked(userAction.getIsLiked());
         return dto;
     }
+
+    @Transactional
+    public Set<FAQ> getFAQs(Integer id) {
+        Solution solution = solutionRepository.findById(id).orElseThrow();
+        
+        return solution.getFaqs();
+    }
+
 
     @Transactional
     public Boolean toggleLike(Integer id) {

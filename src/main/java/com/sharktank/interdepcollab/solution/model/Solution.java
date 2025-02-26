@@ -18,13 +18,19 @@ import lombok.Data;
 @Data
 public class Solution {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private Integer id;
+    
+    private String problemStatement;
+    private String impact;
+    private String category;
+    private String tags;
+    private String department;
     
     @NotNull
     @Column(nullable = false)
-    private String name;
-    private String department;
+    private String title;
+    private String description;
     
     @ManyToOne
     @JoinColumn

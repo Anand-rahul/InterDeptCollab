@@ -12,17 +12,11 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class SolutionDTO {
+public class SolutionBaseDTO {
     private Integer id;
-    private String name;
+    private String title;
+    private String description;
     private String department;
-
-    @JsonIgnore
-    private AppUser createdBy;
-    @JsonIgnore
-    private AppUser deliveryManager;
-    @JsonIgnore
-    private AppUser pmo;
 
     //TODO: Ensure this can't be updated by the user
     private Integer likeCount;
@@ -32,16 +26,5 @@ public class SolutionDTO {
 
     private Instant createdDate;
     private Instant updatedDate;
-    
-    public String getCreatedBy(){
-        return createdBy.getEmail();
-    }
-     
-    public String getDeliveryManager(){
-        return createdBy.getEmail();
-    }
-     
-    public String getPMO(){
-        return createdBy.getEmail();
-    }
+
 }
