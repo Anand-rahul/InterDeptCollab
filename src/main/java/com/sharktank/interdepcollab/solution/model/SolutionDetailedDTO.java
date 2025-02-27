@@ -1,6 +1,7 @@
 package com.sharktank.interdepcollab.solution.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sharktank.interdepcollab.user.model.AppUser;
 
 import lombok.AllArgsConstructor;
@@ -25,16 +26,18 @@ public class SolutionDetailedDTO extends SolutionBaseDTO {
     private String category;
     private String tags;
 
-    // BUG: This is not returning anything
+    @JsonProperty("createdBy")
     public String getCreatedBy() {
-        return createdBy.getEmail();
+        return createdBy != null ? createdBy.getEmail() : null;
     }
 
+    @JsonProperty("deliveryManager")
     public String getDeliveryManager() {
-        return createdBy.getEmail();
+        return deliveryManager != null ? deliveryManager.getEmail() : null;
     }
 
+    @JsonProperty("pmo")
     public String getPMO() {
-        return createdBy.getEmail();
+        return pmo != null ? pmo.getEmail() : null;
     }
 }

@@ -3,33 +3,26 @@ package com.sharktank.interdepcollab.requirement.model;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.solution.model.SolutionBaseDTO;
 import com.sharktank.interdepcollab.user.model.AppUser;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
+@EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequirementDetailedDTO {
-
-    private Integer id;
-    
-    private String title;
-    private String description;
+public class RequirementDetailedDTO extends RequirementBaseDTO{
     
     private SolutionBaseDTO solution;
     
-    private String requestingDepartment;
-    private String subDepartment;
-    private String lineOfBusiness;
-    private String productName;
     private String problemStatement;
     private String expectedImpact;
-    private String priority;
 
     private UserStory userStory;
     @JsonIgnore
@@ -37,20 +30,18 @@ public class RequirementDetailedDTO {
     @JsonIgnore
     private AppUser createdBy;
     
-    private Status status;
-    
-    private Instant createdDate;
     private Instant updatedDate;
     
     private Instant pickedDate;
     private Instant closedDate;
 
-    // BUG: This does not work
+    @JsonProperty("assignedTo")
     public String getAssignedTo(){
-        return assignedTo.getEmail();
+        return assignedTo != null ? assignedTo.getEmail() : null;
     }
     
+    @JsonProperty("createdBy")
     public String getCreatedBy(){
-        return createdBy.getEmail();
+        return createdBy != null ? createdBy.getEmail() : null;
     }
 }
