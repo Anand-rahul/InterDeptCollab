@@ -59,6 +59,12 @@ public class SolutionController {
         Set<FAQ> faqs = solutionService.getFAQs(id);
         return ResponseEntity.ok(faqs);
     }
+    
+    @PostMapping("/{id}/faqs")
+    public ResponseEntity<Set<FAQ>> addFAQs(@PathVariable Integer id, @RequestBody Set<FAQ> faqs) {
+        Set<FAQ> finalFaqs = solutionService.addFAQs(id, faqs);
+        return ResponseEntity.ok(finalFaqs);
+    }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> likeSolution(@PathVariable Integer id) {

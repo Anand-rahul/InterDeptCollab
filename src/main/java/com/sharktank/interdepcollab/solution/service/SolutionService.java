@@ -63,16 +63,24 @@ public class SolutionService {
         log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
                 
-        log.info("Files in solution: {}",solution.getFiles().toString());
-        for (Integer fileId : solution.getFiles()) {
-            FileMetadata file = fileService.tagFileToParent(fileId, finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
-            log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
-            finalSolution.getFiles().add(file);
+        log.info("Files in solution: {}", solution.getFiles().toString());
+        if (solution.getFiles() != null) {
+            for (Integer fileId : solution.getFiles()) {
+                FileMetadata file = fileService.tagFileToParent(fileId,
+                        finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
+                log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
+                finalSolution.getFiles().add(file);
+            }
         }
 
-        finalSolution = solutionRepository.save(finalSolution);
+        log.info("Infra in solution: {}", solution.getInfraResources().toString());
+        if (solution.getInfraResources() != null) {
+            final Solution currSolution = finalSolution;
+            solution.getInfraResources().forEach(x -> x.setSolution(currSolution));
+            finalSolution.setInfraResources(solution.getInfraResources());
+        }
 
-        SolutionDetailedDTO solutionOutput = modelMapper.map(finalSolution, SolutionDetailedDTO.class);
+        SolutionDetailedDTO solutionOutput = modelMapper.map(solutionRepository.save(finalSolution), SolutionDetailedDTO.class);
 
         return solutionOutput;
     }
@@ -109,7 +117,10 @@ public class SolutionService {
         if (solution.getProblemStatement() != null && !solution.getProblemStatement().isEmpty()) {
             existingSolution.setProblemStatement(solution.getProblemStatement());
         }
-
+        if(solution.getInfraResources() != null  && !solution.getInfraResources().isEmpty()){
+            solution.getInfraResources().forEach(x -> x.setSolution(existingSolution));
+            existingSolution.getInfraResources().addAll(solution.getInfraResources());
+        }
         // if (solution.getCreatedBy() != null
         //         && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
         //     throw new InvalidUserException("Cannot change the creator of the solution");
@@ -128,7 +139,7 @@ public class SolutionService {
             existingSolution.setPmo(pmo);
         }
 
-        existingSolution = solutionRepository.save(existingSolution);
+        solutionRepository.save(existingSolution);
         return modelMapper.map(existingSolution, SolutionDetailedDTO.class);
     }
 
@@ -157,13 +168,17 @@ public class SolutionService {
         return dto;
     }
 
-    @Transactional
     public Set<FAQ> getFAQs(Integer id) {
         Solution solution = solutionRepository.findById(id).orElseThrow();
-        
         return solution.getFaqs();
     }
 
+    public Set<FAQ> addFAQs(Integer id, Set<FAQ> faqs) {
+        final Solution solution = solutionRepository.findById(id).orElseThrow();
+        faqs.forEach(faq -> faq.setSolution(solution));
+        solution.getFaqs().addAll(faqs);
+        return solutionRepository.save(solution).getFaqs();
+    }
 
     @Transactional
     public Boolean toggleLike(Integer id) {

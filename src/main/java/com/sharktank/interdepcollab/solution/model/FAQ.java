@@ -1,7 +1,10 @@
 package com.sharktank.interdepcollab.solution.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 @Data
@@ -19,5 +22,7 @@ public class FAQ {
     @ManyToOne
     @JoinColumn
     @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private Solution solution;
 }

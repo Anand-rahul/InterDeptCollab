@@ -21,7 +21,7 @@ import lombok.ToString;
 public class AppUser implements Serializable {
 
     public static enum Role {
-        ROLE_ADMIN, ROLE_VIEWER, ROLE_USER;
+        ADMIN, VIEWER, IT_USER, BIZ_USER;
     }
 
     @Id

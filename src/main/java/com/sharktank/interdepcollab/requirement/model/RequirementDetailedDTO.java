@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sharktank.interdepcollab.devops.model.UserStory;
+import com.sharktank.interdepcollab.solution.model.SolutionBaseDTO;
 import com.sharktank.interdepcollab.user.model.AppUser;
 
 import lombok.AllArgsConstructor;
@@ -13,11 +14,22 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequirementDTO {
+public class RequirementDetailedDTO {
 
     private Integer id;
+    
     private String title;
     private String description;
+    
+    private SolutionBaseDTO solution;
+    
+    private String requestingDepartment;
+    private String subDepartment;
+    private String lineOfBusiness;
+    private String productName;
+    private String problemStatement;
+    private String expectedImpact;
+    private String priority;
 
     private UserStory userStory;
     @JsonIgnore
@@ -33,6 +45,7 @@ public class RequirementDTO {
     private Instant pickedDate;
     private Instant closedDate;
 
+    // BUG: This does not work
     public String getAssignedTo(){
         return assignedTo.getEmail();
     }

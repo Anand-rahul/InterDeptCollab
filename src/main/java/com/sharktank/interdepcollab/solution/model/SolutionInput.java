@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 public class SolutionInput {
     private String title;
     private String description;
-    
+
     private String problemStatement;
     private String impact;
     private String category;
@@ -22,5 +22,6 @@ public class SolutionInput {
     private String deliveryManager;
     private String pmo;
 
+    private List<InfraResource> infraResources;
     private List<Integer> files;
 }

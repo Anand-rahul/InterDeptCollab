@@ -3,6 +3,15 @@ package com.sharktank.interdepcollab.solution.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sharktank.interdepcollab.user.model.AppUser;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+@Data
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class SolutionDetailedDTO extends SolutionBaseDTO {
     @JsonIgnore
     private AppUser createdBy;
