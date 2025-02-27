@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITS HUB - SolveIT™</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; font-size: 14px; }
+        .header-section { 
+            background: linear-gradient(135deg, #007bff, #0056b3); 
+            color: white; padding: 25px; text-align: center; 
+            border-radius: 0 0 10px 10px; box-shadow: 0px 3px 6px rgba(0,0,0,0.15); 
+        }
+        .header-section h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 5px; }
+        .container-box { max-width: 950px; margin: auto; background: white; padding: 15px; border-radius: 8px; box-shadow: 0px 2px 8px rgba(0,0,0,0.1); }
+        .status-badge { font-size: 12px; font-weight: 600; padding: 6px 10px; border-radius: 5px; }
+        .status-pending { background-color: #ffc107; color: black; }
+        .status-in-progress { background-color: #17a2b8; color: white; }
+        .status-completed { background-color: #28a745; color: white; }
+        .status-rejected { background-color: #dc3545; color: white; }
+        .progress-container { margin-top: 15px; }
+        .progress-bar { height: 6px; border-radius: 3px; width: 100%; }
+        .floating-assign { 
+            position: fixed; bottom: 15px; right: 15px; 
+            background: #007bff; color: white; padding: 10px 15px; border-radius: 6px; 
+            box-shadow: 0px 3px 6px rgba(0,0,0,0.2); cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.3s;
+        }
+        .floating-assign:hover { background: #0056b3; }
+        .assign-box { background: #f8f9fa; padding: 10px; border-radius: 6px; box-shadow: 0px 1px 4px rgba(0,0,0,0.1); }
+        .action-btns { display: flex; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">BITS HUB</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">SolveIT™</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>🚀 SolveIT™ - Review & Assign IT Requests</h1>
+        <p>Accept, assign, and track solution requests efficiently.</p>
+    </div>
+
+    <div class="container mt-3">
+        <div class="container-box">
+            
+            <!-- Pending Requests Table -->
+            <div class="section-title">📌 Pending Solution Requests</div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Submitted By</th>
+                        <th>Department</th>
+                        <th>Priority</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Loan Process AI Enhancement</td>
+                        <td>John Doe</td>
+                        <td>Retail Banking</td>
+                        <td><span class="status-badge status-in-progress">High</span></td>
+                        <td class="action-btns">
+                            <button class="btn btn-primary btn-sm">View Details</button>
+                            <button class="btn btn-success btn-sm" onclick="showAssignPanel()">Accept & Assign</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Customer Retargeting Automation</td>
+                        <td>Jane Smith</td>
+                        <td>Marketing</td>
+                        <td><span class="status-badge status-pending">Medium</span></td>
+                        <td class="action-btns">
+                            <button class="btn btn-primary btn-sm">View Details</button>
+                            <button class="btn btn-danger btn-sm">Reject</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Status Tracking Panel -->
+            <div class="mt-3">
+                <div class="section-title">📊 Execution Status</div>
+                <div class="progress-container">
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width: 40%;">40% Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IT Team Assignment Panel -->
+            <div class="mt-3 assign-box" id="assignPanel" style="display: none;">
+                <div class="section-title">👥 IT Team Assignment</div>
+                <p><strong>Current Assigned Engineer:</strong> <span id="assignedEngineer" class="text-danger">Unassigned</span></p>
+
+                <div class="d-flex align-items-center">
+                    <button class="btn btn-outline-primary btn-sm me-2" onclick="pickRequest()">✔ Pick This Request</button>
+                    <span class="text-muted">OR</span>
+                    <select class="form-select ms-2" id="assignEngineer">
+                        <option value="">Assign an Engineer</option>
+                        <option>John Doe (Backend)</option>
+                        <option>Jane Smith (Infra)</option>
+                        <option>Michael Lee (AI)</option>
+                    </select>
+                    <button class="btn btn-success btn-sm ms-2" onclick="confirmAssignment()">Assign</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Floating Assign Button -->
+    <button class="floating-assign" onclick="showAssignPanel()">💾 Assign & Start Work</button>
+
+    <script>
+        function showAssignPanel() {
+            document.getElementById("assignPanel").style.display = "block";
+        }
+
+        function pickRequest() {
+            document.getElementById("assignedEngineer").innerText = "You (Self-Assigned)";
+            alert("You have successfully picked this request.");
+        }
+
+        function confirmAssignment() {
+            var engineer = document.getElementById("assignEngineer").value;
+            if (engineer) {
+                document.getElementById("assignedEngineer").innerText = engineer;
+                alert(engineer + " has been assigned successfully.");
+            } else {
+                alert("Please select an engineer to assign.");
+            }
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITS HUB - Solutions</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; }
+        .header-section { background: #007bff; color: white; padding: 30px 0; text-align: center; }
+        .header-section h1 { font-size: 2rem; font-weight: bold; }
+        .search-bar { margin: 20px 0; text-align: center; }
+        .search-bar input { width: 60%; padding: 12px; border-radius: 5px; border: 1px solid #ddd; }
+        .solution-card { background: white; border-radius: 10px; padding: 15px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .solution-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+        .solution-card h5 { font-weight: bold; }
+        .solution-card p { font-size: 14px; color: #666; }
+        .filter-section { margin: 20px 0; }
+        .btn-filter { background: #fff; border: 1px solid #007bff; color: #007bff; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-right: 10px; }
+        .btn-filter:hover { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">BITS HUB</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Solutions</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">Submit Requirement</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">SolveIT</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">OptiMax</a></li>
+                <li class="nav-item"><a class="nav-link" href="#">ImpactLens</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>📂 Explore Solutions</h1>
+        <p>Find, adopt, and collaborate on solutions across the organization.</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" placeholder="🔍 Search for solutions..." />
+    </div>
+
+    <!-- Filters -->
+    <div class="container filter-section text-center">
+        <button class="btn-filter">📌 Functional</button>
+        <button class="btn-filter">🛠 Technical</button>
+        <button class="btn-filter">🏢 By Department</button>
+        <button class="btn-filter">🔥 High Impact</button>
+        <button class="btn-filter">📈 Most Adopted</button>
+    </div>
+
+    <div class="container mt-4">
+        <!-- Solutions Grid -->
+        <div class="solution-grid">
+            <div class="solution-card">
+                <h5>🔹 Loan Processing AI</h5>
+                <p>Automates loan approvals using AI-driven workflows.</p>
+                <span>👍 15 | 👀 120</span>
+            </div>
+            <div class="solution-card">
+                <h5>🔹 Chatbot Customer Support</h5>
+                <p>AI-powered chatbot for 24/7 customer engagement.</p>
+                <span>👍 20 | 👀 200</span>
+            </div>
+            <div class="solution-card">
+                <h5>🔹 Cloud Cost Optimizer</h5>
+                <p>Optimizes cloud spend by eliminating redundant resources.</p>
+                <span>👍 35 | 👀 310</span>
+            </div>
+            <div class="solution-card">
+                <h5>🔹 AI Fraud Detection</h5>
+                <p>Detects fraudulent transactions in real-time.</p>
+                <span>👍 50 | 👀 400</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination / Load More -->
+    <div class="text-center mt-4">
+        <button class="btn btn-primary">🔄 Load More Solutions</button>
+    </div>
+
+</body>
+</html>

@@ -1,7 +1,7 @@
 package com.sharktank.interdepcollab.solution.service;
 
 import java.io.IOException;
-
+import java.util.Set;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -41,7 +41,7 @@ public class SolutionService {
     private final BlobManagementService fileService;
 
     @Transactional
-    public SolutionDTO createSolution(SolutionInput solution) throws InvalidUserException {
+    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException {
         AppUser user = userService.getLoggedInUser();
 
         if (user == null) {
@@ -63,21 +63,29 @@ public class SolutionService {
         log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
                 
-        log.info("Files in solution: {}",solution.getFiles().toString());
-        for (Integer fileId : solution.getFiles()) {
-            FileMetadata file = fileService.tagFileToParent(fileId, finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
-            log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
-            finalSolution.getFiles().add(file);
+        log.info("Files in solution: {}", solution.getFiles().toString());
+        if (solution.getFiles() != null) {
+            for (Integer fileId : solution.getFiles()) {
+                FileMetadata file = fileService.tagFileToParent(fileId,
+                        finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
+                log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
+                finalSolution.getFiles().add(file);
+            }
         }
 
-        finalSolution = solutionRepository.save(finalSolution);
+        log.info("Infra in solution: {}", solution.getInfraResources().toString());
+        if (solution.getInfraResources() != null) {
+            final Solution currSolution = finalSolution;
+            solution.getInfraResources().forEach(x -> x.setSolution(currSolution));
+            finalSolution.setInfraResources(solution.getInfraResources());
+        }
 
-        SolutionDTO solutionOutput = modelMapper.map(finalSolution, SolutionDTO.class);
+        SolutionDetailedDTO solutionOutput = modelMapper.map(solutionRepository.save(finalSolution), SolutionDetailedDTO.class);
 
         return solutionOutput;
     }
 
-    public SolutionDTO patchSolution(Integer id, JsonPatch jsonPatch)
+    public SolutionDetailedDTO patchSolution(Integer id, JsonPatch jsonPatch)
             throws JsonPatchException, JsonProcessingException, NoSuchElementException {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
         JsonNode patched = jsonPatch.apply(objectMapper.convertValue(existingSolution, JsonNode.class));
@@ -86,15 +94,33 @@ public class SolutionService {
         return this.updateSolution(id, modelMapper.map(existingSolution, SolutionInput.class));
     }
 
-    public SolutionDTO updateSolution(Integer id, SolutionInput solution) {
+    public SolutionDetailedDTO updateSolution(Integer id, SolutionInput solution) {
         Solution existingSolution = solutionRepository.findById(id).orElseThrow();
-        if (solution.getName() != null && !solution.getName().isEmpty()) {
-            existingSolution.setName(solution.getName());
+        if (solution.getTitle() != null && !solution.getTitle().isEmpty()) {
+            existingSolution.setTitle(solution.getTitle());
+        }
+        if (solution.getDescription() != null && !solution.getDescription().isEmpty()) {
+            existingSolution.setDescription(solution.getDescription());
+        }
+        if (solution.getCategory() != null && !solution.getCategory().isEmpty()) {
+            existingSolution.setCategory(solution.getCategory());
         }
         if (solution.getDepartment() != null && !solution.getDepartment().isEmpty()) {
             existingSolution.setDepartment(solution.getDepartment());
         }
-
+        if (solution.getImpact() != null && !solution.getImpact().isEmpty()) {
+            existingSolution.setImpact(solution.getImpact());
+        }
+        if (solution.getTags() != null && !solution.getTags().isEmpty()) {
+            existingSolution.setTags(solution.getTags());
+        }
+        if (solution.getProblemStatement() != null && !solution.getProblemStatement().isEmpty()) {
+            existingSolution.setProblemStatement(solution.getProblemStatement());
+        }
+        if(solution.getInfraResources() != null  && !solution.getInfraResources().isEmpty()){
+            solution.getInfraResources().forEach(x -> x.setSolution(existingSolution));
+            existingSolution.getInfraResources().addAll(solution.getInfraResources());
+        }
         // if (solution.getCreatedBy() != null
         //         && !solution.getCreatedBy().equals(existingSolution.getCreatedBy().getEmail())) {
         //     throw new InvalidUserException("Cannot change the creator of the solution");
@@ -113,20 +139,20 @@ public class SolutionService {
             existingSolution.setPmo(pmo);
         }
 
-        existingSolution = solutionRepository.save(existingSolution);
-        return modelMapper.map(existingSolution, SolutionDTO.class);
+        solutionRepository.save(existingSolution);
+        return modelMapper.map(existingSolution, SolutionDetailedDTO.class);
     }
 
-    public Page<SolutionDTO> getAllSolutions(Pageable pageable) {
+    public Page<SolutionBaseDTO> getAllSolutions(Pageable pageable) {
         Page<Solution> solutions = solutionRepository.findAll(pageable);
-        return solutions.map(solution -> modelMapper.map(solution, SolutionDTO.class));
+        return solutions.map(solution -> modelMapper.map(solution, SolutionBaseDTO.class));
     }
 
     @Transactional
-    public SolutionDTO getSolution(Integer id) {
+    public SolutionDetailedDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
-        SolutionDTO dto = modelMapper.map(solution, SolutionDTO.class);
+        SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);
         
@@ -140,6 +166,18 @@ public class SolutionService {
 
         dto.setIsLiked(userAction.getIsLiked());
         return dto;
+    }
+
+    public Set<FAQ> getFAQs(Integer id) {
+        Solution solution = solutionRepository.findById(id).orElseThrow();
+        return solution.getFaqs();
+    }
+
+    public Set<FAQ> addFAQs(Integer id, Set<FAQ> faqs) {
+        final Solution solution = solutionRepository.findById(id).orElseThrow();
+        faqs.forEach(faq -> faq.setSolution(solution));
+        solution.getFaqs().addAll(faqs);
+        return solutionRepository.save(solution).getFaqs();
     }
 
     @Transactional

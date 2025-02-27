@@ -1,0 +1,34 @@
+<!-- IT Assignment Section -->
+<div class="mt-3">
+    <div class="section-title">👥 IT Team Assignment</div>
+    <p><strong>Current Assigned Engineer:</strong> <span id="assignedEngineer" class="text-danger">Unassigned</span></p>
+
+    <div class="d-flex align-items-center">
+        <button class="btn btn-outline-primary btn-sm me-2" onclick="pickRequest()">✔ Pick This Request</button>
+        <span class="text-muted">OR</span>
+        <select class="form-select ms-2" id="assignEngineer">
+            <option value="">Assign an Engineer</option>
+            <option>John Doe (Backend)</option>
+            <option>Jane Smith (Infra)</option>
+            <option>Michael Lee (AI)</option>
+        </select>
+        <button class="btn btn-success btn-sm ms-2" onclick="confirmAssignment()">Assign</button>
+    </div>
+</div>
+
+<script>
+    function pickRequest() {
+        document.getElementById("assignedEngineer").innerText = "You (Self-Assigned)";
+        alert("You have successfully picked this request.");
+    }
+
+    function confirmAssignment() {
+        var engineer = document.getElementById("assignEngineer").value;
+        if (engineer) {
+            document.getElementById("assignedEngineer").innerText = engineer;
+            alert(engineer + " has been assigned successfully.");
+        } else {
+            alert("Please select an engineer to assign.");
+        }
+    }
+</script>

@@ -10,11 +10,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SolutionInput {
-    private String name;
+    private String title;
+    private String description;
+
+    private String problemStatement;
+    private String impact;
+    private String category;
+    private String tags;
     private String department;
 
     private String deliveryManager;
     private String pmo;
 
+    private List<InfraResource> infraResources;
     private List<Integer> files;
 }

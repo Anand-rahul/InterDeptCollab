@@ -16,9 +16,12 @@ import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
 
+//TODO: Figure out how to give the selection for user
+//TODO: Return FAQs
 
 @RestController
 @RequiredArgsConstructor
@@ -28,27 +31,39 @@ public class SolutionController {
     private final SolutionService solutionService;
 
     @PostMapping
-    public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionInput solution) {
-        SolutionDTO createdSolution = solutionService.createSolution(solution);
+    public ResponseEntity<SolutionDetailedDTO> createSolution(@RequestBody SolutionInput solution) {
+        SolutionDetailedDTO createdSolution = solutionService.createSolution(solution);
         return ResponseEntity.ok(createdSolution);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SolutionDTO> updateSolution(@PathVariable Integer id, @RequestBody SolutionInput solution) throws JsonPatchException {
-        SolutionDTO updatedSolution = solutionService.updateSolution(id, solution);
+    public ResponseEntity<SolutionDetailedDTO> updateSolution(@PathVariable Integer id, @RequestBody SolutionInput solution) throws JsonPatchException {
+        SolutionDetailedDTO updatedSolution = solutionService.updateSolution(id, solution);
         return ResponseEntity.ok(updatedSolution);
     }
 
     @GetMapping
-    public ResponseEntity<Page<SolutionDTO>> getAllSolutions(@SortDefault(sort = "viewCount") @PageableDefault(size = 20) Pageable pageable) {
-        Page<SolutionDTO> solutions = solutionService.getAllSolutions(pageable);
+    public ResponseEntity<Page<SolutionBaseDTO>> getAllSolutions(@SortDefault(sort = "viewCount") @PageableDefault(size = 20) Pageable pageable) {
+        Page<SolutionBaseDTO> solutions = solutionService.getAllSolutions(pageable);
         return ResponseEntity.ok(solutions);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SolutionDTO> getSolution(@PathVariable Integer id) {
-        SolutionDTO solution = solutionService.getSolution(id);
+    public ResponseEntity<SolutionDetailedDTO> getSolution(@PathVariable Integer id) {
+        SolutionDetailedDTO solution = solutionService.getSolution(id);
         return ResponseEntity.ok(solution);
+    }
+
+    @GetMapping("/{id}/faqs")
+    public ResponseEntity<Set<FAQ>> getFAQs(@PathVariable Integer id) {
+        Set<FAQ> faqs = solutionService.getFAQs(id);
+        return ResponseEntity.ok(faqs);
+    }
+    
+    @PostMapping("/{id}/faqs")
+    public ResponseEntity<Set<FAQ>> addFAQs(@PathVariable Integer id, @RequestBody Set<FAQ> faqs) {
+        Set<FAQ> finalFaqs = solutionService.addFAQs(id, faqs);
+        return ResponseEntity.ok(finalFaqs);
     }
 
     @PostMapping("/{id}/like")
