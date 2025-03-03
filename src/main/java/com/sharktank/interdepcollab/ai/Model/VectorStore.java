@@ -1,30 +1,34 @@
 package com.sharktank.interdepcollab.ai.Model;
 
 import jakarta.persistence.*;
+import lombok.ToString;
+
 import java.util.UUID;
+
 
 @Entity
 @Table(name = "vectors")
+@ToString
 public class VectorStore {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
     @Column(nullable = false)
-    private String sourceType; 
+    public String sourceType; 
 
     @Column(nullable = false, unique = true)
-    private UUID sourceId; 
+    public UUID sourceId; 
 
     @Column(columnDefinition = "TEXT")
-    private String text;
+    public String text;
 
     @Column(columnDefinition = "TEXT")
-    private String jsonData; 
+    public String jsonData; 
 
     @Column(columnDefinition = "vector(1536)", nullable = false)
-    private float[] embedding;
+    public float[] embedding;
 
     public VectorStore() {}
 
