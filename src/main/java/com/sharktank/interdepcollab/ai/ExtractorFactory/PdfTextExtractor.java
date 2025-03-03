@@ -9,6 +9,10 @@ import org.springframework.ai.reader.pdf.PagePdfDocumentReader;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
 import org.springframework.core.io.InputStreamResource;
 
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 public class PdfTextExtractor implements ITextExtractor{
 
     @Override
@@ -23,6 +27,7 @@ public class PdfTextExtractor implements ITextExtractor{
                 .withPagesPerDocument(1)
                 .build();
         PagePdfDocumentReader pdfDocumentReader = new PagePdfDocumentReader(resource, pdfConfig);
+        log.info("DocsFetched:"+pdfDocumentReader.get().toString());
         return pdfDocumentReader.get();
     }
     

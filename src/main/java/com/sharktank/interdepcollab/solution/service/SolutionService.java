@@ -169,12 +169,20 @@ public class SolutionService {
     }
 
     @Transactional
-    public SolutionDetailedDTO getSolution(Integer id) {
+    public SolutionDetailedDTO getSolution(Integer id){
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
         
-        JsonNode node = objectMapper.convertValue(solution, JsonNode.class);
-        log.info("Solution -> {}", node.toPrettyString());
+        // Send to AI Background vectorizing service
+        try {
+            SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(),
+                    solution.getId(), solution);
+            JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+            log.info("Vectorising solution -> {}", solution.getId());
+            parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, solution.getId().toString());
+        } catch (Exception ex) {
+            log.error("Exception while vectorising solution", ex);
+        }
 
         SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 

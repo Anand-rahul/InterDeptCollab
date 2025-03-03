@@ -119,8 +119,8 @@ public class DataLoader {
             for (var inputs : obj.getDocuments()) {
                 InputStreamResource resource = new InputStreamResource(inputs);
 
-                String filename = resource.getFilename();
-                String extension = FilenameUtils.getExtension(filename);
+                String filename = "pdfDoc";resource.getFilename();
+                String extension = "pdf";//FilenameUtils.getExtension(filename);
 
                 log.info("Processing file: {} as {}", filename, sourceType);
                 List<Document> textChunks;
@@ -249,6 +249,7 @@ public class DataLoader {
     public List<String> storeEmbeddings(List<String> chunks, String fileType, String fileName, String sourceType,String id) {
         List<VectorStore> vectorDataList = new ArrayList<>();
         List<String> embeddingsUUID=new ArrayList<>();
+        log.info("chunks:"+chunks.size());
         for (String chunk : chunks) {
             float[] embedding= new float[1536];
             try {
@@ -264,9 +265,10 @@ public class DataLoader {
             metadata.put("fileName", fileName);
             metadata.put("fileType", fileType);
             metadata.put("chunkSize", String.valueOf(chunk.length()));
-
+            log.info("metadata:"+metadata.toString());
             try {
                 String jsonData = objectMapper.writeValueAsString(metadata);  
+                log.info("jsonData:"+jsonData);
                 vectorDataList.add(new VectorStore(sourceType, sourceId, chunk, jsonData, embedding));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Error converting metadata to JSON string", e);
