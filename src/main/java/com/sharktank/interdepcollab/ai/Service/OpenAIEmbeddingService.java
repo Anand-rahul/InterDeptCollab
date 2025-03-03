@@ -60,14 +60,10 @@ public class OpenAIEmbeddingService {
                 .header("Content-Type", "application/json")
                 .header("api-key", API_KEY) 
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody.toString()))
-                .build();
-        log.info(request.uri().toString());
-        log.info(request.headers().firstValue("api-key").toString());
-        log.info(requestBody.toString());
+                .build();        
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         JSONObject jsonResponse = new JSONObject(response.body());
-        log.info("Embedding Json {}",jsonResponse);
         /*
         Expected JSON response structure:
         {
