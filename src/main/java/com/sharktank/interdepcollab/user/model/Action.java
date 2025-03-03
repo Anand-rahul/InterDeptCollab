@@ -1,5 +1,7 @@
 package com.sharktank.interdepcollab.user.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -20,6 +22,7 @@ public abstract class Action {
     @NotNull
     @JoinColumn(nullable = false)
     @EqualsAndHashCode.Exclude
+    @JsonIgnore
     private AppUser user;
 
     private Boolean isViewed;

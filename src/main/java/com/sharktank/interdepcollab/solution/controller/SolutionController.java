@@ -31,7 +31,7 @@ public class SolutionController {
     private final SolutionService solutionService;
 
     @PostMapping
-    public ResponseEntity<SolutionDetailedDTO> createSolution(@RequestBody SolutionInput solution) {
+    public ResponseEntity<SolutionDetailedDTO> createSolution(@RequestBody SolutionInput solution) throws Exception {
         SolutionDetailedDTO createdSolution = solutionService.createSolution(solution);
         return ResponseEntity.ok(createdSolution);
     }

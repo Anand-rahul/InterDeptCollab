@@ -114,6 +114,8 @@ public class DataLoader {
         List<String> ids = new ArrayList<>();
         
         if (sourceType == SourceType.SOLUTION_DOCUMENT) {
+            var api=obj.getDocuments();
+            log.info("working on Count:"+api.size());
             for (var inputs : obj.getDocuments()) {
                 InputStreamResource resource = new InputStreamResource(inputs);
 

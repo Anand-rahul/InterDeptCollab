@@ -1,7 +1,10 @@
 package com.sharktank.interdepcollab.solution.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -10,14 +13,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import com.sharktank.interdepcollab.ai.Constants.SourceType;
+import com.sharktank.interdepcollab.ai.Model.*;
+import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.exception.InvalidUserException;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.file.service.BlobManagementService;
@@ -39,9 +47,10 @@ public class SolutionService {
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final BlobManagementService fileService;
+    private final Parallel parallelService;
 
     @Transactional
-    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException {
+    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException, Exception {
         AppUser user = userService.getLoggedInUser();
 
         if (user == null) {
@@ -63,6 +72,7 @@ public class SolutionService {
         log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
                 
+        List<InputStream> fileInputs = new ArrayList<InputStream>();
         log.info("Files in solution: {}", solution.getFiles().toString());
         if (solution.getFiles() != null) {
             for (Integer fileId : solution.getFiles()) {
@@ -70,8 +80,11 @@ public class SolutionService {
                         finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
                 log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
                 finalSolution.getFiles().add(file);
+                fileInputs.add(fileService.getFile(fileId));
             }
         }
+        SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(), finalSolution.getId(), fileInputs);
+        parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT, finalSolution.getId().toString());
 
         log.info("Infra in solution: {}", solution.getInfraResources().toString());
         if (solution.getInfraResources() != null) {
@@ -80,7 +93,14 @@ public class SolutionService {
             finalSolution.setInfraResources(solution.getInfraResources());
         }
 
-        SolutionDetailedDTO solutionOutput = modelMapper.map(solutionRepository.save(finalSolution), SolutionDetailedDTO.class);
+        solutionRepository.save(finalSolution);
+        
+        // Send to AI Background vectorizing service
+        SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(), finalSolution.getId(), finalSolution);
+        JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+        parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, finalSolution.getId().toString());
+
+        SolutionDetailedDTO solutionOutput = modelMapper.map(finalSolution, SolutionDetailedDTO.class);
 
         return solutionOutput;
     }
@@ -152,6 +172,10 @@ public class SolutionService {
     public SolutionDetailedDTO getSolution(Integer id) {
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
+        
+        JsonNode node = objectMapper.convertValue(solution, JsonNode.class);
+        log.info("Solution -> {}", node.toPrettyString());
+
         SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);

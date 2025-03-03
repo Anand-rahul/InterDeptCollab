@@ -1,5 +1,8 @@
 package com.sharktank.interdepcollab.solution.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,8 +22,9 @@ public class InfraResource {
     private String type;
     private String stack;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn
     @ToString.Exclude
+    @JsonIgnore
     private Solution solution;
 }

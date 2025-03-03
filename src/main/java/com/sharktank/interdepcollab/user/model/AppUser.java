@@ -1,6 +1,9 @@
 package com.sharktank.interdepcollab.user.model;
 
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 
 import jakarta.persistence.*;
@@ -44,6 +47,7 @@ public class AppUser implements Serializable {
     @NotNull
     @Column(unique = true, nullable = false)
     @ToString.Exclude
+    @JsonIgnore
     private String password;
 
     private String department;
