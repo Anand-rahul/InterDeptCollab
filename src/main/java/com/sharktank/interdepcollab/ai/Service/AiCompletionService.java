@@ -157,8 +157,6 @@ public class AiCompletionService {
 
         String context = fetchTopKMatches(prompt);
 
-
-
         enrichedPrompt.append("Context: ").append(context).append("    ");
 
         enrichedPrompt.append("prompt: ").append(prompt);
