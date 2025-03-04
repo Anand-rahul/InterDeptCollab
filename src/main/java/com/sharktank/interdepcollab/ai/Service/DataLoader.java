@@ -81,8 +81,7 @@ public class DataLoader {
         return embeddingUUIDs;
     }
 
-    //Method for object vectorization(Final to be used in multithreading)
-    @Transactional
+    //Method for object vectorization(Final to be used in multithreading)    
     public <T extends SourceBase> List<String> vectorizeObject(JsonNode obj, SourceType sourceType, String id)  {
         if (sourceType != SourceType.SOLUTION ) {
             throw new IllegalArgumentException("Invalid sourceType. Must be 'SOLUTION' and object source type must match.");

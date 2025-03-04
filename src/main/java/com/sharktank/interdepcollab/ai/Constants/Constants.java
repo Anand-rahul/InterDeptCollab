@@ -1,7 +1,5 @@
 package com.sharktank.interdepcollab.ai.Constants;
 
-import java.beans.BeanProperty;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
