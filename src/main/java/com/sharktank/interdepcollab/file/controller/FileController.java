@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
 import com.sharktank.interdepcollab.ai.Model.SourceBase;
 import com.sharktank.interdepcollab.ai.Model.SourceDocumentBase;
+import com.sharktank.interdepcollab.ai.Service.DataLoader;
 import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.file.service.BlobManagementService;
@@ -54,8 +55,7 @@ public class FileController {
                     fileMetadata.getParentId(), new ArrayList<InputStream>());
             solutionVectorize.getDocuments().add(fileService.getFile(id));
             log.info("Vectorising File -> {}", fileMetadata.getId());
-            parallelService.parallelVectorizeFile(solutionVectorize, SourceType.SOLUTION_DOCUMENT,
-                    fileMetadata.getParentId().toString());
+            parallelService.parallelVectorizeFile(solutionVectorize, SourceType.SOLUTION_DOCUMENT,fileMetadata.getParentId().toString());
         } catch (Exception ex) {
             log.error("Exception while vectorising file", ex);
         }

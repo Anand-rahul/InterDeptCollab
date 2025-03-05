@@ -113,8 +113,6 @@ public class DataLoader {
         List<String> ids = new ArrayList<>();
         
         if (sourceType == SourceType.SOLUTION_DOCUMENT) {
-            var api=obj.getDocuments();
-            log.info("working on Count:"+api.size());
             for (var inputs : obj.getDocuments()) {
                 InputStreamResource resource = new InputStreamResource(inputs);
 
@@ -134,9 +132,8 @@ public class DataLoader {
                 } else {
                     throw new IllegalArgumentException("Unsupported file type: " + extension);
                 }
-                
+                log.info("reached post extractor init");
                 textChunks = extractorMethod.factoryMethod().extractText(resource);
-
                 String content = textChunks.stream().map(Document::getText).collect(Collectors.joining("\n"));
 
                 log.info("Splitting document into chunks...");
@@ -144,10 +141,11 @@ public class DataLoader {
 
                 log.info("Generating embeddings...");
                 List<String> embeddingsUUID = storeEmbeddings(chunks, extension, filename, "SOLUTION_DOCUMENT", id);
-
+                log.info(embeddingsUUID.toString());
                 ids.addAll(embeddingsUUID);
             }
         }
+
         log.info("Document ingestion completed.");
         return ids;
     }
