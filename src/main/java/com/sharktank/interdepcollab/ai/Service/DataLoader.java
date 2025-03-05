@@ -113,11 +113,17 @@ public class DataLoader {
         List<String> ids = new ArrayList<>();
         
         if (sourceType == SourceType.SOLUTION_DOCUMENT) {
-            for (var inputs : obj.getDocuments()) {
-                InputStreamResource resource = new InputStreamResource(inputs);
-
-                String filename = "pdfDoc";resource.getFilename();
-                String extension = "pdf";//FilenameUtils.getExtension(filename);
+            
+                InputStreamResource resource = new InputStreamResource(obj.getDocuments());
+                String filename ="";
+                String extension="";
+                try{
+                    log.info(obj.getFileName());
+                    filename = obj.getFileName().split("\\.")[0];
+                    extension = obj.getFileName().split("\\.")[1];
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
 
                 log.info("Processing file: {} as {}", filename, sourceType);
                 List<Document> textChunks;
@@ -143,7 +149,6 @@ public class DataLoader {
                 List<String> embeddingsUUID = storeEmbeddings(chunks, extension, filename, "SOLUTION_DOCUMENT", id);
                 log.info(embeddingsUUID.toString());
                 ids.addAll(embeddingsUUID);
-            }
         }
 
         log.info("Document ingestion completed.");

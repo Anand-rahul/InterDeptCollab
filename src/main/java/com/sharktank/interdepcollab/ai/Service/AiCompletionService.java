@@ -132,9 +132,9 @@ public class AiCompletionService {
     public String fetchTopKMatches(String query) throws Exception {
         float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);        
 
-        List<Object[]> results = vectorRepository.searchByCosineSimilarity("solution"
+        List<Object[]> results = vectorRepository.searchByCosineSimilarity("SOLUTION_DOCUMENT"
                     , dataLoaderService.getVectorString(embedding)
-                    ,2);
+                    ,5);
         List<VectorFetchDTO> vectors = results.stream()
             .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
             .toList();

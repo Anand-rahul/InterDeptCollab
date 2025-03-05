@@ -16,6 +16,7 @@ public class SourceDocumentBase {
     //private SourceType sourceType;
     private String sourceType;
     private Integer id; 
-    private List<InputStream> documents;
+    private InputStream documents;
+    private String fileName;
 }
 

@@ -52,8 +52,7 @@ public class FileController {
         // Send to AI Background vectorizing service
         try {
             SourceDocumentBase solutionVectorize = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(),
-                    fileMetadata.getParentId(), new ArrayList<InputStream>());
-            solutionVectorize.getDocuments().add(fileService.getFile(id));
+                    fileMetadata.getParentId(), fileService.getFile(id),fileMetadata.getOriginalName());
             log.info("Vectorising File -> {}", fileMetadata.getId());
             parallelService.parallelVectorizeFile(solutionVectorize, SourceType.SOLUTION_DOCUMENT,fileMetadata.getParentId().toString());
         } catch (Exception ex) {

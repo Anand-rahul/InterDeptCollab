@@ -72,7 +72,6 @@ public class SolutionService {
         log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
                 
-        List<InputStream> fileInputs = new ArrayList<InputStream>();
         log.info("Files in solution: {}", solution.getFiles().toString());
         if (solution.getFiles() != null) {
             for (Integer fileId : solution.getFiles()) {
@@ -80,11 +79,11 @@ public class SolutionService {
                         finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
                 log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
                 finalSolution.getFiles().add(file);
-                fileInputs.add(fileService.getFile(fileId));
+                SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(), finalSolution.getId(), fileService.getFile(fileId), file.getOriginalName());
+                log.info("Vectorising File -> {}", file.getId());
+                parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT, finalSolution.getId().toString());
             }
         }
-        SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(), finalSolution.getId(), fileInputs);
-        parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT, finalSolution.getId().toString());
 
         log.info("Infra in solution: {}", solution.getInfraResources().toString());
         if (solution.getInfraResources() != null) {
@@ -98,6 +97,8 @@ public class SolutionService {
         // Send to AI Background vectorizing service
         SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(), finalSolution.getId(), finalSolution);
         JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+        
+        log.info("Vectorising Solution -> {}", finalSolution.getId());
         parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, finalSolution.getId().toString());
 
         SolutionDetailedDTO solutionOutput = modelMapper.map(finalSolution, SolutionDetailedDTO.class);
