@@ -5,7 +5,6 @@ import java.util.Set;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedBy;
 
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.*;

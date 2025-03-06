@@ -1,19 +1,16 @@
 package com.sharktank.interdepcollab.ai.ExtractorFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.pdf.config.PdfDocumentReaderConfig;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 
@@ -53,10 +50,5 @@ public class PdfTextExtractor implements ITextExtractor{
             throw new RuntimeException("Error extracting text from PDF", e);
         }
         return opMap;
-    }
-    private ByteArrayResource convertToByteArrayResource(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        inputStream.transferTo(buffer); // Read input stream to memory
-        return new ByteArrayResource(buffer.toByteArray());
     }
 }

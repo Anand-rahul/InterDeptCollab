@@ -1,6 +1,5 @@
 package com.sharktank.interdepcollab.ai.Service;
 
-import com.azure.storage.blob.BlobServiceClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +14,6 @@ import com.sharktank.interdepcollab.ai.Model.VectorStore;
 import com.sharktank.interdepcollab.ai.ParserStrategy.JsonParseStrategy;
 import com.sharktank.interdepcollab.ai.ParserStrategy.ParsingStrategyFactory;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
-import com.sharktank.interdepcollab.configuration.MultiThreading;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +44,6 @@ public class DataLoader {
 
     @Autowired
     private ObjectMapper objectMapper; 
-
-    //Startegy method for Vectorization 
-    @Autowired
-    private MultiThreading multiThreading;
 
 
     @Transactional

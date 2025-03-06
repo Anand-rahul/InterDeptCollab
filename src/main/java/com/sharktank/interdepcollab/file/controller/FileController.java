@@ -2,7 +2,6 @@ package com.sharktank.interdepcollab.file.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -17,15 +16,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
-import com.sharktank.interdepcollab.ai.Model.SourceBase;
 import com.sharktank.interdepcollab.ai.Model.SourceDocumentBase;
-import com.sharktank.interdepcollab.ai.Service.DataLoader;
 import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.file.service.BlobManagementService;
-import com.sharktank.interdepcollab.solution.model.Solution;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
