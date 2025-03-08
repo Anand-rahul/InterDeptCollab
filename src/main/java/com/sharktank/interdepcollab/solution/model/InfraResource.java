@@ -1,5 +1,9 @@
 package com.sharktank.interdepcollab.solution.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,13 +18,17 @@ import lombok.ToString;
 public class InfraResource {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonBackReference
     private Integer id;
     private String name;
     private String type;
-    private String stack;
+    private String subType;
+    private String techStack;
+    private String budgetCode;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn
     @ToString.Exclude
+    @JsonIgnore
     private Solution solution;
 }

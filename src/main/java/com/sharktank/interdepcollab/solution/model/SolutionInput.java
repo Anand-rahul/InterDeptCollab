@@ -18,6 +18,7 @@ public class SolutionInput {
     private String category;
     private String tags;
     private String department;
+    private String detailedExplanantion;
 
     private String deliveryManager;
     private String pmo;

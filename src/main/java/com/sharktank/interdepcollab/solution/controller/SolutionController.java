@@ -13,6 +13,7 @@ import com.sharktank.interdepcollab.solution.model.*;
 import com.sharktank.interdepcollab.solution.service.SolutionService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.Map;
@@ -20,10 +21,8 @@ import java.util.Set;
 
 import org.springframework.web.multipart.MultipartFile;
 
-//TODO: Figure out how to give the selection for user
-//TODO: Return FAQs
-
 @RestController
+@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/solution")
 public class SolutionController {
@@ -31,7 +30,7 @@ public class SolutionController {
     private final SolutionService solutionService;
 
     @PostMapping
-    public ResponseEntity<SolutionDetailedDTO> createSolution(@RequestBody SolutionInput solution) {
+    public ResponseEntity<SolutionDetailedDTO> createSolution(@RequestBody SolutionInput solution) throws Exception {
         SolutionDetailedDTO createdSolution = solutionService.createSolution(solution);
         return ResponseEntity.ok(createdSolution);
     }
@@ -51,6 +50,9 @@ public class SolutionController {
     @GetMapping("/{id}")
     public ResponseEntity<SolutionDetailedDTO> getSolution(@PathVariable Integer id) {
         SolutionDetailedDTO solution = solutionService.getSolution(id);
+
+        solutionService.getAllSolutions(3,4,5).stream().forEach(info -> log.info(info.toString()));
+
         return ResponseEntity.ok(solution);
     }
 

@@ -1,6 +1,5 @@
 package com.sharktank.interdepcollab.ai.Service;
 
-import com.azure.storage.blob.BlobServiceClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +14,6 @@ import com.sharktank.interdepcollab.ai.Model.VectorStore;
 import com.sharktank.interdepcollab.ai.ParserStrategy.JsonParseStrategy;
 import com.sharktank.interdepcollab.ai.ParserStrategy.ParsingStrategyFactory;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
-import com.sharktank.interdepcollab.configuration.MultiThreading;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +44,6 @@ public class DataLoader {
 
     @Autowired
     private ObjectMapper objectMapper; 
-
-    //Startegy method for Vectorization 
-    @Autowired
-    private MultiThreading multiThreading;
 
 
     @Transactional
@@ -113,11 +107,17 @@ public class DataLoader {
         List<String> ids = new ArrayList<>();
         
         if (sourceType == SourceType.SOLUTION_DOCUMENT) {
-            for (var inputs : obj.getDocuments()) {
-                InputStreamResource resource = new InputStreamResource(inputs);
-
-                String filename = resource.getFilename();
-                String extension = FilenameUtils.getExtension(filename);
+            
+                InputStreamResource resource = new InputStreamResource(obj.getDocuments());
+                String filename ="";
+                String extension="";
+                try{
+                    log.info(obj.getFileName());
+                    filename = obj.getFileName().split("\\.")[0];
+                    extension = obj.getFileName().split("\\.")[1];
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
 
                 log.info("Processing file: {} as {}", filename, sourceType);
                 List<Document> textChunks;
@@ -132,9 +132,8 @@ public class DataLoader {
                 } else {
                     throw new IllegalArgumentException("Unsupported file type: " + extension);
                 }
-                
+                log.info("reached post extractor init");
                 textChunks = extractorMethod.factoryMethod().extractText(resource);
-
                 String content = textChunks.stream().map(Document::getText).collect(Collectors.joining("\n"));
 
                 log.info("Splitting document into chunks...");
@@ -142,10 +141,10 @@ public class DataLoader {
 
                 log.info("Generating embeddings...");
                 List<String> embeddingsUUID = storeEmbeddings(chunks, extension, filename, "SOLUTION_DOCUMENT", id);
-
+                log.info(embeddingsUUID.toString());
                 ids.addAll(embeddingsUUID);
-            }
         }
+
         log.info("Document ingestion completed.");
         return ids;
     }
@@ -246,6 +245,7 @@ public class DataLoader {
     public List<String> storeEmbeddings(List<String> chunks, String fileType, String fileName, String sourceType,String id) {
         List<VectorStore> vectorDataList = new ArrayList<>();
         List<String> embeddingsUUID=new ArrayList<>();
+        log.info("chunks:"+chunks.size());
         for (String chunk : chunks) {
             float[] embedding= new float[1536];
             try {
@@ -261,9 +261,10 @@ public class DataLoader {
             metadata.put("fileName", fileName);
             metadata.put("fileType", fileType);
             metadata.put("chunkSize", String.valueOf(chunk.length()));
-
+            log.info("metadata:"+metadata.toString());
             try {
                 String jsonData = objectMapper.writeValueAsString(metadata);  
+                log.info("jsonData:"+jsonData);
                 vectorDataList.add(new VectorStore(sourceType, sourceId, chunk, jsonData, embedding));
             } catch (JsonProcessingException e) {
                 throw new RuntimeException("Error converting metadata to JSON string", e);

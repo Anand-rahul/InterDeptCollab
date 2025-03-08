@@ -2,6 +2,8 @@ package com.sharktank.interdepcollab.solution.service;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -18,6 +20,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
+import com.sharktank.interdepcollab.ai.Constants.SourceType;
+import com.sharktank.interdepcollab.ai.Model.*;
+import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.exception.InvalidUserException;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.file.service.BlobManagementService;
@@ -39,9 +44,10 @@ public class SolutionService {
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final BlobManagementService fileService;
+    private final Parallel parallelService;
 
     @Transactional
-    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException {
+    public SolutionDetailedDTO createSolution(SolutionInput solution) throws InvalidUserException, Exception {
         AppUser user = userService.getLoggedInUser();
 
         if (user == null) {
@@ -70,6 +76,9 @@ public class SolutionService {
                         finalSolution.getClass().getSimpleName().toUpperCase(), finalSolution.getId());
                 log.info("Adding to solution {}: {}", finalSolution.getId(), file.toString());
                 finalSolution.getFiles().add(file);
+                SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(), finalSolution.getId(), fileService.getFile(fileId), file.getOriginalName());
+                log.info("Vectorising File -> {}", file.getId());
+                parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT, finalSolution.getId().toString());
             }
         }
 
@@ -80,7 +89,16 @@ public class SolutionService {
             finalSolution.setInfraResources(solution.getInfraResources());
         }
 
-        SolutionDetailedDTO solutionOutput = modelMapper.map(solutionRepository.save(finalSolution), SolutionDetailedDTO.class);
+        solutionRepository.save(finalSolution);
+        
+        // Send to AI Background vectorizing service
+        SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(), finalSolution.getId(), finalSolution);
+        JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+        
+        log.info("Vectorising Solution -> {}", finalSolution.getId());
+        parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, finalSolution.getId().toString());
+
+        SolutionDetailedDTO solutionOutput = modelMapper.map(finalSolution, SolutionDetailedDTO.class);
 
         return solutionOutput;
     }
@@ -148,10 +166,29 @@ public class SolutionService {
         return solutions.map(solution -> modelMapper.map(solution, SolutionBaseDTO.class));
     }
 
+    public List<SolutionBaseDTO> getAllSolutions(int... fileIds) {
+        Iterable<Integer> fileIdsIterable = Arrays.stream(fileIds).boxed().collect(Collectors.toList());
+        List<Solution> solutions = solutionRepository.findAllById(fileIdsIterable);
+        return solutions.stream().map(solution -> modelMapper.map(solution, SolutionBaseDTO.class))
+                .collect(Collectors.toList());
+    }
+    
     @Transactional
-    public SolutionDetailedDTO getSolution(Integer id) {
+    public SolutionDetailedDTO getSolution(Integer id){
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
+        
+        // Send to AI Background vectorizing service
+        // try {
+        //     SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(),
+        //             solution.getId(), solution);
+        //     JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+        //     log.info("Vectorising solution -> {}", solution.getId());
+        //     parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, solution.getId().toString());
+        // } catch (Exception ex) {
+        //     log.error("Exception while vectorising solution", ex);
+        // }
+
         SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 
         Action userAction = getOrInitUserAction(user, solution);
@@ -225,6 +262,13 @@ public class SolutionService {
         FileMetadata fileMetadata = fileService.uploadFile(file, solution.getClass().getSimpleName().toUpperCase(), solution.getId());
         solution.getFiles().add(fileMetadata);
         solutionRepository.save(solution);
+
+        SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(),
+                solution.getId(), fileService.getFile(fileMetadata.getId()), fileMetadata.getOriginalName());
+        log.info("Vectorising File -> {}", fileMetadata.getId());
+        parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT,
+                solution.getId().toString());
+
         return fileMetadata;
     }
     

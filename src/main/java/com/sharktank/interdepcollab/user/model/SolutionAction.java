@@ -1,5 +1,6 @@
 package com.sharktank.interdepcollab.user.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sharktank.interdepcollab.solution.model.Solution;
 
 import jakarta.persistence.DiscriminatorValue;
@@ -18,5 +19,6 @@ import lombok.NoArgsConstructor;
 public class SolutionAction extends Action {
     @ManyToOne
     @JoinColumn(nullable = false)
+    @JsonIgnore
     private Solution solution;
 }

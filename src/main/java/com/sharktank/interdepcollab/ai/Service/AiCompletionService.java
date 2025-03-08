@@ -12,7 +12,6 @@ import com.sharktank.interdepcollab.ai.Model.ChatResponseDTO;
 import com.sharktank.interdepcollab.ai.Model.ChatSession;
 import com.sharktank.interdepcollab.ai.Model.Message;
 import com.sharktank.interdepcollab.ai.Model.VectorFetchDTO;
-import com.sharktank.interdepcollab.ai.Model.VectorStore;
 import com.sharktank.interdepcollab.ai.Repository.ChatSessionRepository;
 import com.sharktank.interdepcollab.ai.Repository.MessageRepository;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
@@ -129,12 +128,12 @@ public class AiCompletionService {
         
     }
 
-    public String fetchTopKMatches(String query) throws Exception {
+    public String fetchTopKMatches(String query,String id) throws Exception {
         float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);        
 
-        List<Object[]> results = vectorRepository.searchByCosineSimilarity("solution"
+        List<Object[]> results = vectorRepository.searchSolutionByCosineSimilarity("SOLUTION_DOCUMENT"
                     , dataLoaderService.getVectorString(embedding)
-                    ,2);
+                    ,5,id);
         List<VectorFetchDTO> vectors = results.stream()
             .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
             .toList();
@@ -151,11 +150,11 @@ public class AiCompletionService {
         return textChunks.toString();
     }
 
-    public ChatResponseDTO getContextualChatOptimized(String chatGuidStr, String prompt)throws Exception {
+    public ChatResponseDTO getContextualChatOptimized(String chatGuidStr, String prompt,String solutionId)throws Exception {
 
         StringBuilder enrichedPrompt=new StringBuilder();
 
-        String context = fetchTopKMatches(prompt);
+        String context = fetchTopKMatches(prompt,solutionId);
 
         enrichedPrompt.append("Context: ").append(context).append("    ");
 

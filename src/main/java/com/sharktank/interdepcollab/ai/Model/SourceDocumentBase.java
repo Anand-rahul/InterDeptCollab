@@ -1,21 +1,16 @@
 package com.sharktank.interdepcollab.ai.Model;
 
 import java.io.InputStream;
-import java.util.List;
-
-import com.sharktank.interdepcollab.ai.Constants.SourceType;
-
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-public abstract class SourceDocumentBase {
+public class SourceDocumentBase {
     //private SourceType sourceType;
     private String sourceType;
     private Integer id; 
-    private List<InputStream> documents;
+    private InputStream documents;
+    private String fileName;
 }
 
