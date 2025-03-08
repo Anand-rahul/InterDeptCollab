@@ -2,6 +2,8 @@ package com.sharktank.interdepcollab.solution.service;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -164,21 +166,28 @@ public class SolutionService {
         return solutions.map(solution -> modelMapper.map(solution, SolutionBaseDTO.class));
     }
 
+    public List<SolutionBaseDTO> getAllSolutions(int... fileIds) {
+        Iterable<Integer> fileIdsIterable = Arrays.stream(fileIds).boxed().collect(Collectors.toList());
+        List<Solution> solutions = solutionRepository.findAllById(fileIdsIterable);
+        return solutions.stream().map(solution -> modelMapper.map(solution, SolutionBaseDTO.class))
+                .collect(Collectors.toList());
+    }
+    
     @Transactional
     public SolutionDetailedDTO getSolution(Integer id){
         AppUser user = userService.getLoggedInUser();
         Solution solution = solutionRepository.findById(id).orElseThrow();
         
         // Send to AI Background vectorizing service
-        try {
-            SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(),
-                    solution.getId(), solution);
-            JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
-            log.info("Vectorising solution -> {}", solution.getId());
-            parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, solution.getId().toString());
-        } catch (Exception ex) {
-            log.error("Exception while vectorising solution", ex);
-        }
+        // try {
+        //     SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(),
+        //             solution.getId(), solution);
+        //     JsonNode node = objectMapper.convertValue(solutionVectorize, JsonNode.class);
+        //     log.info("Vectorising solution -> {}", solution.getId());
+        //     parallelService.parallelVectorizeObject(node, SourceType.SOLUTION, solution.getId().toString());
+        // } catch (Exception ex) {
+        //     log.error("Exception while vectorising solution", ex);
+        // }
 
         SolutionDetailedDTO dto = modelMapper.map(solution, SolutionDetailedDTO.class);
 
@@ -253,6 +262,13 @@ public class SolutionService {
         FileMetadata fileMetadata = fileService.uploadFile(file, solution.getClass().getSimpleName().toUpperCase(), solution.getId());
         solution.getFiles().add(fileMetadata);
         solutionRepository.save(solution);
+
+        SourceDocumentBase fileVectoriseBase = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(),
+                solution.getId(), fileService.getFile(fileMetadata.getId()), fileMetadata.getOriginalName());
+        log.info("Vectorising File -> {}", fileMetadata.getId());
+        parallelService.parallelVectorizeFile(fileVectoriseBase, SourceType.SOLUTION_DOCUMENT,
+                solution.getId().toString());
+
         return fileMetadata;
     }
     

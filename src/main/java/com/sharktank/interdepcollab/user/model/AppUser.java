@@ -2,6 +2,7 @@ package com.sharktank.interdepcollab.user.model;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.io.Serializable;
@@ -47,7 +48,7 @@ public class AppUser implements Serializable {
     @NotNull
     @Column(unique = true, nullable = false)
     @ToString.Exclude
-    @JsonIgnore
+    @JsonBackReference
     private String password;
 
     private String department;
@@ -61,4 +62,8 @@ public class AppUser implements Serializable {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Set<Action> actions;
+
+    public String getIdentifer() {
+        return this.firstName + " " + this.lastName + " (" + this.designation + ")";
+    }
 }
