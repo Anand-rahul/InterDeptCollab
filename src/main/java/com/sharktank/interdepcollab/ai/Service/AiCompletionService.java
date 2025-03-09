@@ -111,7 +111,7 @@ public class AiCompletionService {
         float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);
         List<Object[]> results = vectorRepository.searchByCosineSimilarity("solution".toUpperCase()
                     , dataLoaderService.getVectorString(embedding)
-                    ,5);
+                    ,2);
         log.info("fetched :"+results.size());
         List<VectorFetchDTO> vectors=results.stream()
                             .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
