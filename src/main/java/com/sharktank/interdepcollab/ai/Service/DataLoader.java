@@ -45,7 +45,6 @@ public class DataLoader {
     @Autowired
     private ObjectMapper objectMapper; 
 
-
     @Transactional
     public  List<String> vectorizeObjectStrategy(String obj, String sourceType, String format){
         if (!List.of("solution").contains(sourceType.toLowerCase())) {

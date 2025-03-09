@@ -179,6 +179,7 @@ public class SolutionService {
         Solution solution = solutionRepository.findById(id).orElseThrow();
         
         // Send to AI Background vectorizing service
+
         // try {
         //     SourceBase<Solution> solutionVectorize = new SourceBase<Solution>(SourceType.SOLUTION.toString(),
         //             solution.getId(), solution);
