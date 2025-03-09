@@ -1,7 +1,9 @@
 package com.sharktank.interdepcollab.ai.Service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -9,13 +11,20 @@ import java.util.stream.IntStream;
 import org.apache.commons.text.similarity.CosineSimilarity;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sharktank.interdepcollab.ai.DTO.SimilarityResponseDTO;
 import com.sharktank.interdepcollab.ai.Model.Optimax;
 import com.sharktank.interdepcollab.ai.Repository.OptimaxRepository;
+import com.sharktank.interdepcollab.solution.model.Solution;
+import com.sharktank.interdepcollab.solution.model.SolutionBaseDTO;
+import com.sharktank.interdepcollab.solution.model.SolutionDetailedDTO;
+import com.sharktank.interdepcollab.solution.repository.SolutionRepository;
+import com.sharktank.interdepcollab.solution.service.SolutionService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,9 +38,32 @@ public class OptimaxService {
     @Autowired
     private OpenAIEmbeddingService openAIEmbeddingService;
 
+    @Autowired
+    private SolutionRepository solutionRepository;
+
+    private final ModelMapper modelMapper=new ModelMapper();
+
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public Map<Integer, List<SimilarityResponseDTO>> getSimilarSolutions(double threshold) {
+        List<Object[]> results = optimaxRepository.findSimilarSolutionsAboveThreshold(threshold);
+        Map<Integer, List<SimilarityResponseDTO>> similarityMap = new HashMap<>();
 
+        log.info("Fetched {} similar solutions",results.size());
+        
+        for (Object[] result : results) {
+            Integer solId1 = (Integer) result[1];
+            Integer solId2 = (Integer) result[2];
+            double similarityScore= (double) result[3];
+            Solution solution1 = solutionRepository.findById(solId1).orElseThrow();
+            Solution solution2=solutionRepository.findById(solId2).orElseThrow();
+
+            SimilarityResponseDTO similarityResponseDTO= new SimilarityResponseDTO(similarityScore, modelMapper.map(solution2, SolutionDetailedDTO.class));
+            similarityMap.computeIfAbsent(solution1.getId(), k -> new ArrayList<>()).add(similarityResponseDTO);
+        }
+        return similarityMap;
+    }
     public Optimax fetchSimilarityScore(String text1,String text2) throws Exception{
         Optimax op=new Optimax();
         JsonNode node1 = objectMapper.readTree(text1);
