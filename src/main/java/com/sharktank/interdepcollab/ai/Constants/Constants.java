@@ -21,7 +21,7 @@ public class Constants {
     }
     @Bean
     public Integer EmbeddingPercentageMatch(){
-        return 40;
+        return 0;
     }
     
 }

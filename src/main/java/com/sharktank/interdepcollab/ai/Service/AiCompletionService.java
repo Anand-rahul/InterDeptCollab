@@ -186,12 +186,13 @@ public class AiCompletionService {
             throw new RuntimeException("Error parsing vector string: " , e);
         }
     }
-    public String fetchTopKMatches(String query,String id, Integer k) throws Exception {
+    public String fetchTopKMatches(String query,Integer id, Integer k) throws Exception {
         float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);        
-
+        log.info(""+id.getClass()+" "+id);
         List<Object[]> results = vectorRepository.searchSolutionByCosineSimilarity("SOLUTION_DOCUMENT"
                     , dataLoaderService.getVectorString(embedding)
                     ,k,id);
+
         List<VectorFetchDTO> vectors = results.stream()
             .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
             .toList();
@@ -208,18 +209,13 @@ public class AiCompletionService {
         return textChunks.toString();
     }
 
-    public ChatResponseDTO getContextualChatOptimized(String chatGuidStr, String prompt,String solutionId)throws Exception {
+    public ChatResponseDTO getContextualChatOptimized(String chatGuidStr, String prompt,Integer solutionId)throws Exception {
 
         StringBuilder enrichedPrompt=new StringBuilder();
-
         String context = fetchTopKMatches(prompt,solutionId,5);
-
         enrichedPrompt.append("Context: ").append(context).append("    ");
-
         enrichedPrompt.append("prompt: ").append(prompt);
-
         UUID chatGuid = UUID.fromString(chatGuidStr);
-
         ChatSession chatSession = chatSessionRepository.findByGuid(chatGuid)
                 .orElseGet(() -> chatSessionRepository.save(new ChatSession(chatGuid, "New Chat Session",Instant.now(),Instant.now())));
     

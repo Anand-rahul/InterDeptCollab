@@ -77,8 +77,8 @@ public class RequirementController {
     }
 
     @PutMapping("/{id}/status/returnToPool")
-    public ResponseEntity<RequirementBaseDTO> revertToNew(@PathVariable Integer id) {
-        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.NEW, null);
+    public ResponseEntity<RequirementBaseDTO> revertToCancelled(@PathVariable Integer id) {
+        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.CANCELLED, null);
         return ResponseEntity.ok(requirement);
     }
 
