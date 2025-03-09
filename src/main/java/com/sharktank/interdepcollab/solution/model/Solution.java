@@ -29,6 +29,7 @@ public class Solution {
     private String category;
     private String tags;
     private String department;
+    private String detailedExplanantion;
     
     @NotNull
     @Column(nullable = false)

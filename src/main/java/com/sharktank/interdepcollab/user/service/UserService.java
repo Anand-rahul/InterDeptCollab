@@ -6,9 +6,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.Arrays;
+import java.util.Dictionary;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.sharktank.interdepcollab.exception.UserExistsException;
 import com.sharktank.interdepcollab.user.model.AppUser;
@@ -54,11 +58,9 @@ public class UserService {
     return ((AuthenticatedUser) authentication.getPrincipal()).getUser();
   }
 
-  // public List<AppUser> getAllUsers() {
-  //     List<AppUser> users = new ArrayList<>();
-  //     userRepository.findAll().forEach(users::add);
-  //     return users;
-  // }
+  public Map<String, String> getAllUsers() {
+    return userRepository.findAll().stream().collect(Collectors.toMap(AppUser::getEmail, AppUser::getIdentifer));
+  }
 
   // public Optional<AppUser> getUserById(Integer id) {
   //     return userRepository.findById(id);

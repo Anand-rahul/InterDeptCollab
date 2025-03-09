@@ -1,5 +1,8 @@
 package com.sharktank.interdepcollab.authentication.controller;
 
+import java.util.Dictionary;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +23,7 @@ import com.sharktank.interdepcollab.exception.UserExistsException;
 import com.sharktank.interdepcollab.user.model.AppUser;
 import com.sharktank.interdepcollab.user.service.UserService;
 
-
+import io.micrometer.core.ipc.http.HttpSender.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,6 +47,7 @@ public class AuthController {
     public ResponseEntity<String> registerUser(@RequestBody AppUser user) throws UserExistsException {
         // Encode the user's password
         log.info("Registering user: " + user);
+        log.info("Raw Password: " + user.getPassword());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         // Save the user to the database
         log.info("Encoded Password: " + user.getPassword());
@@ -63,6 +67,11 @@ public class AuthController {
         return new ResponseEntity<String>(jwt, HttpStatus.OK);
     }
 
+    @GetMapping("/user/get-all")
+    public ResponseEntity<Map<String, String>> getAllUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+    
     @GetMapping("/hello")
     public String hello() {
         return "Hello, World!";

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
 import com.sharktank.interdepcollab.ai.Model.SourceDocumentBase;
 import com.sharktank.interdepcollab.ai.Service.Parallel;
@@ -45,14 +46,14 @@ public class FileController {
         FileMetadata fileMetadata = fileService.getMetadata(id);
         
         // Send to AI Background vectorizing service
-        try {
-            SourceDocumentBase solutionVectorize = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(),
-                    fileMetadata.getParentId(), fileService.getFile(id),fileMetadata.getOriginalName());
-            log.info("Vectorising File -> {}", fileMetadata.getId());
-            parallelService.parallelVectorizeFile(solutionVectorize, SourceType.SOLUTION_DOCUMENT,fileMetadata.getParentId().toString());
-        } catch (Exception ex) {
-            log.error("Exception while vectorising file", ex);
-        }
+        // try {
+        //     SourceDocumentBase solutionVectorize = new SourceDocumentBase(SourceType.SOLUTION_DOCUMENT.toString(),
+        //             fileMetadata.getParentId(), fileService.getFile(id),fileMetadata.getOriginalName());
+        //     log.info("Vectorising File -> {}", fileMetadata.getId());
+        //     parallelService.parallelVectorizeFile(solutionVectorize, SourceType.SOLUTION_DOCUMENT,fileMetadata.getParentId().toString());
+        // } catch (Exception ex) {
+        //     log.error("Exception while vectorising file", ex);
+        // }
 
         return ResponseEntity.ok()
                 .contentLength(fileMetadata.getSize()) // If you have the file size
