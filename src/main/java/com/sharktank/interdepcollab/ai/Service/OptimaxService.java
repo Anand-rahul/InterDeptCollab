@@ -1,9 +1,7 @@
 package com.sharktank.interdepcollab.ai.Service;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -108,6 +106,28 @@ public class OptimaxService {
         return cosineSimilarity.cosineSimilarity(vector1, vector2);
     }
 
+    public double fetchCosineSimilarityScore(float[] vector1, float[] vector2)throws Exception{
+        if (vector1.length != vector2.length) {
+            throw new IllegalArgumentException("Vectors must be of the same length");
+        }
+
+        double dotProduct = IntStream.range(0, vector1.length)
+                .mapToDouble(i -> vector1[i] * vector2[i])
+                .sum();
+
+        double magnitude1 = Math.sqrt(IntStream.range(0, vector1.length)
+                .mapToDouble(i -> vector1[i] * vector1[i])
+                .sum());
+
+        double magnitude2 = Math.sqrt(IntStream.range(0, vector2.length)
+                .mapToDouble(i -> vector2[i] * vector2[i])
+                .sum());
+
+        if (magnitude1 == 0 || magnitude2 == 0) {
+            return 0; 
+        }
+        return dotProduct;
+    }
     private double fetchCosineSimilarityScore(String text1, String text2) throws Exception  {
 
         float[] vector1= openAIEmbeddingService.getEmbeddingHttp(text1);

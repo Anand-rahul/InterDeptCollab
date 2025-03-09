@@ -50,9 +50,6 @@ public class SolutionController {
     @GetMapping("/{id}")
     public ResponseEntity<SolutionDetailedDTO> getSolution(@PathVariable Integer id) {
         SolutionDetailedDTO solution = solutionService.getSolution(id);
-
-        solutionService.getAllSolutions(3,4,5).stream().forEach(info -> log.info(info.toString()));
-
         return ResponseEntity.ok(solution);
     }
 

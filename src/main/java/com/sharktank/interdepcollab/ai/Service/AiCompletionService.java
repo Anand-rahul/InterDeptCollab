@@ -6,18 +6,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.postgresql.util.PGobject;
 
 import com.sharktank.interdepcollab.ai.Constants.Constants;
-import com.sharktank.interdepcollab.ai.Model.ChatResponseDTO;
+import com.sharktank.interdepcollab.ai.DTO.ChatResponseDTO;
+import com.sharktank.interdepcollab.ai.DTO.VectorFetchDTO;
 import com.sharktank.interdepcollab.ai.Model.ChatSession;
 import com.sharktank.interdepcollab.ai.Model.Message;
-import com.sharktank.interdepcollab.ai.Model.VectorFetchDTO;
 import com.sharktank.interdepcollab.ai.Repository.ChatSessionRepository;
 import com.sharktank.interdepcollab.ai.Repository.MessageRepository;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 
@@ -40,6 +42,9 @@ public class AiCompletionService {
 
     @Autowired
     private OpenAIEmbeddingService openAIEmbeddingService;
+
+    @Autowired
+    private OptimaxService optimaxService;
 
     @Value("${spring.azure.ai.chat.model.url}")
     private String conversationalAiEndpoint;
@@ -107,33 +112,86 @@ public class AiCompletionService {
     //     return promptResponse;
     // }
 
-    public List<String> fetchSimilarSolutions(String query) throws Exception{
-        float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);
+    public List<String> fetchSimilarSolutions(String query,Integer k) throws Exception{
+        float[] queryEmbedding = openAIEmbeddingService.getEmbeddingHttp(query);
+        String embeddingVector=dataLoaderService.getVectorString(queryEmbedding);
         List<Object[]> results = vectorRepository.searchByCosineSimilarity("solution".toUpperCase()
-                    , dataLoaderService.getVectorString(embedding)
-                    ,2);
+                    , embeddingVector
+                    ,k);
         log.info("fetched :"+results.size());
-        List<VectorFetchDTO> vectors=results.stream()
-                            .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
-                            .toList();
-
         List<String> sourceIds=new ArrayList<>();
-        for(var vecFetch:vectors){
-            JSONObject jsonObject = new JSONObject(vecFetch.getJsonData());
-            log.info("fetched json :"+jsonObject);
-            String sourceId = jsonObject.getString("sourceId")==null?"":jsonObject.getString("sourceId");
-            sourceIds.add(sourceId);
+        for (Object[] row : results) {
+            
+            float[] embeddingArray = null;
+            Object embeddingObj = row[3];
+            
+            if (embeddingObj != null) {
+                if (embeddingObj instanceof float[]) {
+                    embeddingArray = (float[]) embeddingObj;
+                } else if (embeddingObj instanceof String) {
+                    embeddingArray = convertVectorStringToFloatArray((String) embeddingObj);
+                } else {
+                    embeddingArray = convertVectorStringToFloatArray(embeddingObj.toString());
+                }
+            }
+            
+            if (embeddingArray == null) {
+                log.warn("Could not parse embedding for row: " + Arrays.toString(row));
+                continue;
+            }
+            
+            // Create DTO with the properly parsed embedding
+            VectorFetchDTO vecFetch = new VectorFetchDTO(
+                (String) row[0],
+                (String) row[1], 
+                (String) row[2],
+                embeddingArray
+            );
+            
+            double opScore = optimaxService.fetchCosineSimilarityScore(queryEmbedding, vecFetch.embeds) * 100;
+            log.info("Calculated opScore: {}", opScore);
+            
+            // Check if similarity is greater than threshold
+            if (opScore >= constants.EmbeddingPercentageMatch()) {
+                JSONObject jsonObject = new JSONObject(vecFetch.getJsonData());
+                log.info("fetched json :" + jsonObject);
+                String sourceId = jsonObject.optString("sourceId", "");
+                sourceIds.add(sourceId);
+            }
         }
         return sourceIds;
-        
     }
-
-    public String fetchTopKMatches(String query,String id) throws Exception {
+    private float[] convertVectorStringToFloatArray(String vectorString) {
+        if (vectorString == null || vectorString.isEmpty()) {
+            return new float[0]; 
+        }
+        try {
+            String cleanedString = vectorString
+                .replaceAll("[\\[\\]{}]", "") 
+                .replaceAll(",$", "")         
+                .trim();
+            if (cleanedString.isEmpty()) {
+                return new float[0];
+            }
+            
+            String[] elements = cleanedString.split(",");
+            float[] result = new float[elements.length];
+            for (int i = 0; i < elements.length; i++) {
+                result[i] = Float.parseFloat(elements[i].trim());
+            }
+            
+            return result;
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error parsing vector string: " , e);
+        }
+    }
+    public String fetchTopKMatches(String query,String id, Integer k) throws Exception {
         float[] embedding = openAIEmbeddingService.getEmbeddingHttp(query);        
 
         List<Object[]> results = vectorRepository.searchSolutionByCosineSimilarity("SOLUTION_DOCUMENT"
                     , dataLoaderService.getVectorString(embedding)
-                    ,5,id);
+                    ,k,id);
         List<VectorFetchDTO> vectors = results.stream()
             .map(row -> new VectorFetchDTO((String) row[0], (String) row[1], (String) row[2]))
             .toList();
@@ -154,7 +212,7 @@ public class AiCompletionService {
 
         StringBuilder enrichedPrompt=new StringBuilder();
 
-        String context = fetchTopKMatches(prompt,solutionId);
+        String context = fetchTopKMatches(prompt,solutionId,5);
 
         enrichedPrompt.append("Context: ").append(context).append("    ");
 

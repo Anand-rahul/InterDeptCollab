@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sharktank.interdepcollab.ai.Model.ChatRequestDTO;
-import com.sharktank.interdepcollab.ai.Model.ChatResponseDTO;
+import com.sharktank.interdepcollab.ai.DTO.ChatRequestDTO;
+import com.sharktank.interdepcollab.ai.DTO.ChatResponseDTO;
 import com.sharktank.interdepcollab.ai.Service.AiCompletionService;
 
 import lombok.RequiredArgsConstructor;

@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jsonpatch.JsonPatch;
 import com.github.fge.jsonpatch.JsonPatchException;
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
+import com.sharktank.interdepcollab.ai.DTO.SourceBase;
+import com.sharktank.interdepcollab.ai.DTO.SourceDocumentBase;
 import com.sharktank.interdepcollab.ai.Model.*;
 import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.exception.InvalidUserException;

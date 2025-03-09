@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
-import com.sharktank.interdepcollab.ai.Model.SourceDocumentBase;
+import com.sharktank.interdepcollab.ai.DTO.SourceDocumentBase;
 import com.sharktank.interdepcollab.ai.Service.Parallel;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.file.service.BlobManagementService;
