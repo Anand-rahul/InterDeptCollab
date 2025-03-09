@@ -33,10 +33,10 @@ public interface VectorRepository extends JpaRepository<VectorStore, Long> {
     // @Query(value = "SELECT v.text,v.json_data,v.source_id FROM vectors v WHERE v.source_type = ?1 LIMIT ?2", nativeQuery = true)
     // List<Object[]> findIdsBySourceType(String sourceType, int topK);
 
-    @Query(value="SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR) FROM vectors v WHERE v.source_type = ?1AND (v.json_data::jsonb ->> 'sourceId') = ?4 ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3",nativeQuery = true)
-    List<Object[]> searchSolutionByCosineSimilarity(String sourceType,String queryVector,int topK,String sourceId);
+    @Query(value="SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR) FROM vectors v WHERE v.source_type = ?1 AND (v.json_data::jsonb ->> 'sourceId') = CAST(?4 AS VARCHAR) ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3",nativeQuery = true)
+    List<Object[]> searchSolutionByCosineSimilarity(String sourceType,String queryVector,int topK,int sourceId);
 
-    @Query(value = "SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR),v.embedding FROM vectors v WHERE v.source_type = ?1 and v.id>3 ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3", nativeQuery = true)
+    @Query(value = "SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR),v.embedding FROM vectors v WHERE v.source_type = ?1  ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3", nativeQuery = true)
     List<Object[]> searchByCosineSimilarity(String sourceType,String queryVector, int topK);
 
     @Query(value = """
