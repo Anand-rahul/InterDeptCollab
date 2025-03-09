@@ -1,6 +1,5 @@
 package com.sharktank.interdepcollab.authentication.controller;
 
-import java.util.Dictionary;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +22,6 @@ import com.sharktank.interdepcollab.exception.UserExistsException;
 import com.sharktank.interdepcollab.user.model.AppUser;
 import com.sharktank.interdepcollab.user.service.UserService;
 
-import io.micrometer.core.ipc.http.HttpSender.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

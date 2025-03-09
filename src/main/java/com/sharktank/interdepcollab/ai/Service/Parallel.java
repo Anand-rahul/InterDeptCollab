@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
+import com.sharktank.interdepcollab.ai.DTO.SourceBase;
+import com.sharktank.interdepcollab.ai.DTO.SourceDocumentBase;
 import com.sharktank.interdepcollab.ai.Model.Optimax;
-import com.sharktank.interdepcollab.ai.Model.SourceBase;
-import com.sharktank.interdepcollab.ai.Model.SourceDocumentBase;
 import com.sharktank.interdepcollab.configuration.MultiThreading;
 
 import lombok.extern.slf4j.Slf4j;

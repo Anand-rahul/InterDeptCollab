@@ -2,6 +2,8 @@ package com.sharktank.interdepcollab.ai.Controllers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.sharktank.interdepcollab.ai.Constants.SourceType;
-import com.sharktank.interdepcollab.ai.Model.VectorizeDTO;
+import com.sharktank.interdepcollab.ai.DTO.TopKFetchDTO;
+import com.sharktank.interdepcollab.ai.DTO.VectorizeDTO;
 import com.sharktank.interdepcollab.ai.Service.AiCompletionService;
 import com.sharktank.interdepcollab.ai.Service.DataLoader;
+import com.sharktank.interdepcollab.solution.model.Solution;
+import com.sharktank.interdepcollab.solution.model.SolutionBaseDTO;
+import com.sharktank.interdepcollab.solution.service.SolutionService;
+
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -27,6 +34,9 @@ public class VectorController  {
 
     @Autowired
     public AiCompletionService aiCompletionService;
+
+    @Autowired 
+    public SolutionService solutionService;
 
 
     @PostMapping("/json")
@@ -51,10 +61,11 @@ public class VectorController  {
     }
     
     @GetMapping("/fetchTopK")
-    public ResponseEntity<List<String>> fetchMatches(@RequestHeader("query") String entity) throws Exception {
-        List<String> ids=new ArrayList<>();
-        ids=aiCompletionService.fetchSimilarSolutions(entity);
-        return ResponseEntity.ok(ids);
+    public ResponseEntity<List<SolutionBaseDTO>> fetchTopKMatches(@RequestBody TopKFetchDTO entity) throws Exception {
+        List<String> idStrings = aiCompletionService.fetchSimilarSolutions(entity.getQuery(),entity.getK());
+        int[] ids = idStrings.stream().mapToInt(Integer::parseInt).toArray();
+        List<SolutionBaseDTO> listOfSimilarSolutions = solutionService.getAllSolutions(ids);
+        return ResponseEntity.ok(listOfSimilarSolutions);
     }
     
 }

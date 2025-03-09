@@ -19,5 +19,9 @@ public class Constants {
                 Begin.";        
             """;
     }
+    @Bean
+    public Integer EmbeddingPercentageMatch(){
+        return 40;
+    }
     
 }

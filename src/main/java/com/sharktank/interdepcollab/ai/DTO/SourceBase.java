@@ -1,4 +1,4 @@
-package com.sharktank.interdepcollab.ai.Model;
+package com.sharktank.interdepcollab.ai.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

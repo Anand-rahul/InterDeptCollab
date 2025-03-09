@@ -1,4 +1,4 @@
-package com.sharktank.interdepcollab.ai.Model;
+package com.sharktank.interdepcollab.ai.DTO;
 
 import java.util.List;
 import java.util.Map;
