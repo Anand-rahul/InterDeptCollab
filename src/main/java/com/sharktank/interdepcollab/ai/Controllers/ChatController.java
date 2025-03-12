@@ -27,7 +27,7 @@ public class ChatController {
     private AiCompletionService aiCompletionService;
 
     @PostMapping("/conversational")
-    public ResponseEntity<ChatResponseDTO> ContenxtualLLMChat(@RequestBody ChatRequestDTO input,@RequestParam(value="solId") Integer solutionId) throws Exception{
+    public ResponseEntity<ChatResponseDTO> ContenxtualLLMChat(@RequestBody ChatRequestDTO input,@RequestParam(value="solId") String solutionId) throws Exception{
         if(input.guid==null || input.guid==""){
             input.guid=UUID.randomUUID().toString();
         }

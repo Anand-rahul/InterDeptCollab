@@ -60,7 +60,7 @@ public class VectorController  {
         return ResponseEntity.ok(generatedUUIDs);
     }
     
-    @GetMapping("/fetchTopK")
+    @PostMapping("/fetchTopK")
     public ResponseEntity<List<SolutionBaseDTO>> fetchTopKMatches(@RequestBody TopKFetchDTO entity) throws Exception {
         List<String> idStrings = aiCompletionService.fetchSimilarSolutions(entity.getQuery(),entity.getK());
         int[] ids = idStrings.stream().mapToInt(Integer::parseInt).toArray();

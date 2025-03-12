@@ -34,7 +34,7 @@ public interface VectorRepository extends JpaRepository<VectorStore, Long> {
     // List<Object[]> findIdsBySourceType(String sourceType, int topK);
 
     @Query(value="SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR) FROM vectors v WHERE v.source_type = ?1 AND (v.json_data::jsonb ->> 'sourceId') = CAST(?4 AS VARCHAR) ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3",nativeQuery = true)
-    List<Object[]> searchSolutionByCosineSimilarity(String sourceType,String queryVector,int topK,int sourceId);
+    List<Object[]> searchSolutionByCosineSimilarity(String sourceType,String queryVector,int topK,String sourceId);
 
     @Query(value = "SELECT v.text, v.json_data, CAST(v.source_id AS VARCHAR),v.embedding FROM vectors v WHERE v.source_type = ?1  ORDER BY embedding <=> CAST(?2 AS vector) LIMIT ?3", nativeQuery = true)
     List<Object[]> searchByCosineSimilarity(String sourceType,String queryVector, int topK);
