@@ -67,6 +67,7 @@ public class SolutionService {
 
         finalSolution.setDeliveryManager(deliveryManager);
         finalSolution.setPmo(pmo);
+        finalSolution.setStatus(Status.LIVE);
 
         log.info("Final solution: {}",finalSolution.toString());
         finalSolution = solutionRepository.save(finalSolution);
@@ -218,6 +219,13 @@ public class SolutionService {
         faqs.forEach(faq -> faq.setSolution(solution));
         solution.getFaqs().addAll(faqs);
         return solutionRepository.save(solution).getFaqs();
+    }
+    
+    public Set<UseCase> addUseCases(Integer id, Set<UseCase> useCases) {
+        final Solution solution = solutionRepository.findById(id).orElseThrow();
+        useCases.forEach(uc -> uc.setSolution(solution));
+        solution.getUseCases().addAll(useCases);
+        return solutionRepository.save(solution).getUseCases();
     }
 
     @Transactional

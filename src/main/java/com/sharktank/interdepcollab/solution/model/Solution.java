@@ -7,6 +7,7 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sharktank.interdepcollab.devops.model.UserStory;
 import com.sharktank.interdepcollab.file.model.FileMetadata;
 import com.sharktank.interdepcollab.user.model.AppUser;
@@ -30,6 +31,9 @@ public class Solution {
     private String tags;
     private String department;
     private String detailedExplanantion;
+
+    private Integer preReqDocumentId;
+    private Status status;
     
     @NotNull
     @Column(nullable = false)
@@ -73,6 +77,12 @@ public class Solution {
 
     @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserStory> userStories;
+    
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UseCase> useCases;
 
     public void addView() {
         this.viewCount++;
