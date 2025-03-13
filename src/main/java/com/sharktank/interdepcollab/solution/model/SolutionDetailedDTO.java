@@ -25,6 +25,9 @@ public class SolutionDetailedDTO extends SolutionBaseDTO {
     private String impact;
     private String category;
     private String tags;
+    
+    private int preReqDocumentId;
+    private Status status;
 
     @JsonProperty("createdBy")
     public String getCreatedBy() {

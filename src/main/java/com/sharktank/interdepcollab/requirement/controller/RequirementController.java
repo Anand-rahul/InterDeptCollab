@@ -51,6 +51,20 @@ public class RequirementController {
         return ResponseEntity.ok(requirements);
     }
 
+    @GetMapping("/new")
+    public ResponseEntity<Page<RequirementBaseDTO>> getAllNewRequirements(
+            @SortDefault(sort = "createdDate") @PageableDefault(size = 20) Pageable pageable) {
+        Page<RequirementBaseDTO> requirements = requirementService.getAllNewRequirements(pageable);
+        return ResponseEntity.ok(requirements);
+    }
+    
+    @GetMapping("/byMe")
+    public ResponseEntity<Page<RequirementBaseDTO>> getMyRequirement(
+            @SortDefault(sort = "createdDate") @PageableDefault(size = 20) Pageable pageable) {
+        Page<RequirementBaseDTO> requirements = requirementService.getMyRequirements(pageable);
+        return ResponseEntity.ok(requirements);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RequirementDetailedDTO> getRequirement(@PathVariable Integer id) {
         RequirementDetailedDTO requirement = requirementService.getRequirement(id);
@@ -76,27 +90,13 @@ public class RequirementController {
         return ResponseEntity.ok(files);
     }
 
-    @PutMapping("/{id}/status/returnToPool")
-    public ResponseEntity<RequirementBaseDTO> revertToCancelled(@PathVariable Integer id) {
-        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.CANCELLED, null);
-        return ResponseEntity.ok(requirement);
-    }
-
-    @PutMapping("/{id}/status/discussion")
-    public ResponseEntity<RequirementBaseDTO> moveToDicussion(@PathVariable Integer id) {
-        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.DISCUSSION, null);
-        return ResponseEntity.ok(requirement);
-    }
-
-    @PutMapping("/{id}/status/accepted")
-    public ResponseEntity<RequirementBaseDTO> moveToAccepted(@PathVariable Integer id, @RequestBody UserStory userStory) {
-        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.IN_PROGRESS, userStory);
-        return ResponseEntity.ok(requirement);
-    }
-
-    @PutMapping("/{id}/status/completed")
-    public ResponseEntity<RequirementBaseDTO> moveToCompleted(@PathVariable Integer id) {
-        RequirementBaseDTO requirement = requirementService.updateStatus(id, Status.COMPLETED, null);
+    @PutMapping("/{id}/status")
+    public ResponseEntity<RequirementBaseDTO> setStatus(@PathVariable Integer id, @RequestParam("value") String status, @RequestBody(required = false) AssignInput input) {
+        if(input == null){
+            input = new AssignInput();
+        }
+        Status assignedStatus = Status.valueOf(status);
+        RequirementBaseDTO requirement = requirementService.updateStatus(id, assignedStatus, input);
         return ResponseEntity.ok(requirement);
     }
 }

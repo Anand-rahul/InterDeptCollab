@@ -2,6 +2,10 @@ package com.sharktank.interdepcollab.requirement.model;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sharktank.interdepcollab.user.model.AppUser;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,5 +28,13 @@ public class RequirementBaseDTO {
     private Status status;
 
     private Instant createdDate;
+    
+    @JsonIgnore
+    private AppUser createdBy;
+
+    @JsonProperty("createdBy")
+    public String getCreatedBy() {
+        return createdBy.getEmail();
+    }
 
 }

@@ -124,6 +124,17 @@ public class RequirementService {
         Page<Requirement> requirements = requirementRepository.findAll(pageable);
         return requirements.map(requirement -> modelMapper.map(requirement, RequirementBaseDTO.class));
     }
+    
+    public Page<RequirementBaseDTO> getAllNewRequirements(Pageable pageable) {
+        Page<Requirement> requirements = requirementRepository.findBySolutionIsNullAndStatus(Status.NEW, pageable);
+        return requirements.map(requirement -> modelMapper.map(requirement, RequirementBaseDTO.class));
+    }
+    
+    public Page<RequirementBaseDTO> getMyRequirements(Pageable pageable) {
+        AppUser user = userService.getLoggedInUser();
+        Page<Requirement> requirements = requirementRepository.findByCreatedByOrAssignedTo(user, user, pageable);
+        return requirements.map(requirement -> modelMapper.map(requirement, RequirementBaseDTO.class));
+    }
 
     @Transactional
     public RequirementDetailedDTO getRequirement(Integer id) {
@@ -133,9 +144,11 @@ public class RequirementService {
         return dto;
     }
 
-    public RequirementBaseDTO updateStatus(Integer id, Status newStatus, UserStory userStory){
+    public RequirementBaseDTO updateStatus(Integer id, Status newStatus, AssignInput input){
         Requirement requirement = requirementRepository.findById(id).orElseThrow();
-        updateStatusNoSave(requirement, newStatus, null, userStory);
+        AppUser user = userService.getUserByEmail(input.getUser()).orElse(userService.getLoggedInUser());
+       
+        updateStatusNoSave(requirement, newStatus, user, input.getUserStory());
         requirementRepository.save(requirement);
 
         return modelMapper.map(requirement, RequirementBaseDTO.class);
@@ -143,9 +156,6 @@ public class RequirementService {
 
     private Requirement updateStatusNoSave(Requirement requirement, Status newStatus, AppUser user,
             UserStory userStory) {
-        if (user == null) {
-            user = userService.getLoggedInUser();
-        }
         switch (newStatus) {
             case NEW:
                 requirement.setAssignedTo(null);
@@ -161,7 +171,7 @@ public class RequirementService {
                     requirement.setPickedDate(Instant.now());
                 }
                 break;
-            case IN_PROGRESS:
+            case ACCEPTED:
                 requirement.setStatus(newStatus);
                 if (requirement.getAssignedTo() == null) {
                     requirement.setAssignedTo(user);
@@ -169,11 +179,10 @@ public class RequirementService {
                 if (requirement.getPickedDate() == null) {
                     requirement.setPickedDate(Instant.now());
                 }
-                if (userStory == null) {
-                    throw new InvalidParameterException("User Story is not present");
+                if (userStory != null) {
+                    userStory.setRequirement(requirement);
+                    requirement.setUserStory(userStory);
                 }
-                userStory.setRequirement(requirement);
-                requirement.setUserStory(userStory);
                 break;
             case COMPLETED:
                 requirement.setStatus(newStatus);

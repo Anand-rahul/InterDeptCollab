@@ -19,16 +19,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class RequirementDetailedDTO extends RequirementBaseDTO{
     
+    @JsonIgnore
     private SolutionBaseDTO solution;
-    
+        
     private String problemStatement;
     private String expectedImpact;
 
     private UserStory userStory;
     @JsonIgnore
     private AppUser assignedTo;
-    @JsonIgnore
-    private AppUser createdBy;
     
     private Instant updatedDate;
     
@@ -40,8 +39,8 @@ public class RequirementDetailedDTO extends RequirementBaseDTO{
         return assignedTo != null ? assignedTo.getEmail() : null;
     }
     
-    @JsonProperty("createdBy")
-    public String getCreatedBy(){
-        return createdBy != null ? createdBy.getEmail() : null;
+    @JsonProperty("solutionId")
+    public Integer getSolutionId(){
+        return solution != null ? solution.getId() : null;
     }
 }

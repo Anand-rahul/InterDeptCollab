@@ -18,10 +18,12 @@ public class SolutionBaseDTO {
     //TODO: Ensure this can't be updated by the user
     private Integer likeCount;
     private Integer viewCount;
-
+    
     private Boolean isLiked;
 
     private Instant createdDate;
     private Instant updatedDate;
+    
+    private Status status;
 
 }

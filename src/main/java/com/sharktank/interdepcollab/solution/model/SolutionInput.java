@@ -25,4 +25,7 @@ public class SolutionInput {
 
     private List<InfraResource> infraResources;
     private List<Integer> files;
+
+    private String powerBiLink;
+    private int preReqDocumentId;
 }
