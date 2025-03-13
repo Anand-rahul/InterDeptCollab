@@ -1,7 +1,10 @@
 package com.sharktank.interdepcollab.ai.Controllers;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +65,24 @@ public class VectorController  {
     
     @PostMapping("/fetchTopK")
     public ResponseEntity<List<SolutionBaseDTO>> fetchTopKMatches(@RequestBody TopKFetchDTO entity) throws Exception {
-        List<String> idStrings = aiCompletionService.fetchSimilarSolutions(entity.getQuery(),entity.getK());
-        int[] ids = idStrings.stream().mapToInt(Integer::parseInt).toArray();
+        // First fetch solutions by similar name
+        Set<String> idStrings = aiCompletionService.fetchSolutionsBySimilarName(entity.getQuery());
+        
+        // Then fetch similar solutions and combine the results
+        Set<String> similarSolutionIds = aiCompletionService.fetchSimilarSolutions(entity.getQuery(), entity.getK());
+        idStrings.addAll(similarSolutionIds);
+        
+        // Handle potential empty set
+        if (idStrings.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+        int[] ids;
+        try {
+            ids = idStrings.stream().mapToInt(Integer::parseInt).toArray();
+        } catch (NumberFormatException e) {
+            throw new Exception("Invalid ID format in the results", e);
+        }
+        
         List<SolutionBaseDTO> listOfSimilarSolutions = solutionService.getAllSolutions(ids);
         return ResponseEntity.ok(listOfSimilarSolutions);
     }

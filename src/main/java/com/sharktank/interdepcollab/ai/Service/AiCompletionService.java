@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.postgresql.util.PGobject;
 
 import com.sharktank.interdepcollab.ai.Constants.Constants;
 import com.sharktank.interdepcollab.ai.DTO.ChatResponseDTO;
@@ -16,10 +15,9 @@ import com.sharktank.interdepcollab.ai.Model.Message;
 import com.sharktank.interdepcollab.ai.Repository.ChatSessionRepository;
 import com.sharktank.interdepcollab.ai.Repository.MessageRepository;
 import com.sharktank.interdepcollab.ai.Repository.VectorRepository;
+import com.sharktank.interdepcollab.solution.repository.SolutionRepository;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.sql.SQLException;
 import java.time.Instant;
 import java.util.*;
 
@@ -45,6 +43,9 @@ public class AiCompletionService {
 
     @Autowired
     private OptimaxService optimaxService;
+
+    @Autowired
+    private SolutionRepository solutionRepository;
 
     @Value("${spring.azure.ai.chat.model.url}")
     private String conversationalAiEndpoint;
@@ -112,14 +113,23 @@ public class AiCompletionService {
     //     return promptResponse;
     // }
 
-    public List<String> fetchSimilarSolutions(String query,Integer k) throws Exception{
+    public Set<String> fetchSolutionsBySimilarName(String paramToBeSearched)throws Exception{
+        Set<String> sourceIdSet=new HashSet<>();
+        var ids=solutionRepository.getAllSolutionsLike(paramToBeSearched);
+        for(String id:ids){
+            sourceIdSet.add(id);
+        }
+        return sourceIdSet;
+    }
+
+    public Set<String> fetchSimilarSolutions(String query,Integer k) throws Exception{
         float[] queryEmbedding = openAIEmbeddingService.getEmbeddingHttp(query);
         String embeddingVector=dataLoaderService.getVectorString(queryEmbedding);
         List<Object[]> results = vectorRepository.searchByCosineSimilarity("solution".toUpperCase()
                     , embeddingVector
                     ,k);
         log.info("fetched :"+results.size());
-        List<String> sourceIds=new ArrayList<>();
+        Set<String> sourceIds=new HashSet<>();
         for (Object[] row : results) {
             
             float[] embeddingArray = null;
